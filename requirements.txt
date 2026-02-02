@@ -11,6 +11,3 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 wheel==0.40.0
 
-# Notes: `gunicorn` is the recommended WSGI server for Render.
-# `scipy` and `joblib` are added to ensure scikit-learn installs and runs properly on Render's Linux builds.
-
