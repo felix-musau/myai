@@ -226,8 +226,11 @@ def get_clarifying_questions(disease, current_symptoms):
 #  ROUTES 
 @app.route('/')
 def index():
-    # Do not clear the whole session here — keep login state.
-    # Initialize conversation step if not set.
+    # Require login to access the chat. Redirect to login if not authenticated.
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    
+    # Initialize conversation step if not set
     if 'step' not in session:
         session['step'] = 'welcome'
     return render_template('index.html')
