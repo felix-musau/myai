@@ -249,8 +249,10 @@
 
         <div class="history-header">
             <h1>🏥 Consultation History</h1>
-            {% if name %}
-                <p>Medical records for: <strong>{{ name }}</strong></p>
+            {% if session.get('role') == 'admin' %}
+                <p>All user consultations (admin view)</p>
+            {% elif session.get('username') %}
+                <p>Medical records for: <strong>{{ session.get('username') }}</strong></p>
             {% else %}
                 <p>View your past consultations</p>
             {% endif %}
@@ -307,7 +309,7 @@
             {% else %}
                 <div class="empty-state">
                     <h2>📋 No Consultations Found</h2>
-                    <p>{% if name %}No consultation records found for {{ name }}.{% else %}Enter your name to view your consultation history.{% endif %}</p>
+                    <p>{% if session.get('role') == 'admin' %}No consultations found.{% elif session.get('username') %}No consultation records found for {{ session.get('username') }}.{% else %}No consultations found. Please log in to view your records.{% endif %}</p>
                     <a href="/">Start a New Consultation</a>
                 </div>
             {% endif %}

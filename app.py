@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_from_directory, redirect, url_for
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import re, random, pandas as pd, numpy as np, csv, warnings
+from werkzeug.security import generate_password_hash, check_password_hash
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -27,11 +28,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 #  DATABASE MODELS
-class UserConsultation(db.Model):
-    __tablename__ = 'user_consultations'
-    
+# New users table to manage authentication and roles
+class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='user')  # 'user' or 'admin'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# Consultations now belong to users. Renamed table from `user_consultations` to `consultations`.
+class Consultation(db.Model):
+    __tablename__ = 'consultations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     age = db.Column(db.Integer)
     gender = db.Column(db.String(20))
     predicted_disease = db.Column(db.String(200), nullable=False)
@@ -43,6 +55,9 @@ class UserConsultation(db.Model):
     family_history = db.Column(db.Text)
     confidence = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship helper (optional)
+    user = db.relationship('User', backref=db.backref('consultations', lazy=True))
 
 #  LOAD ML MODEL
 training = pd.read_csv("Training.csv")
@@ -211,8 +226,10 @@ def get_clarifying_questions(disease, current_symptoms):
 #  ROUTES 
 @app.route('/')
 def index():
-    session.clear()
-    session['step'] = 'welcome'
+    # Do not clear the whole session here — keep login state.
+    # Initialize conversation step if not set.
+    if 'step' not in session:
+        session['step'] = 'welcome'
     return render_template('index.html')
 
 @app.route('/reset')
@@ -223,13 +240,18 @@ def reset():
 
 @app.route('/history')
 def history():
-    name = request.args.get('name', '')
-    if name:
-        consultations = UserConsultation.query.filter_by(name=name).order_by(
-            UserConsultation.created_at.desc()
-        ).all()
-        return render_template('history.html', consultations=consultations, name=name)
-    return render_template('history.html', consultations=[], name='')
+    # Require login to view history. Admins can view all consultations.
+    user_id = session.get('user_id')
+    role = session.get('role')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    if role == 'admin':
+        consultations = Consultation.query.order_by(Consultation.created_at.desc()).all()
+    else:
+        consultations = Consultation.query.filter_by(user_id=user_id).order_by(Consultation.created_at.desc()).all()
+
+    return render_template('history.html', consultations=consultations)
 
 @app.route('/fact')
 def get_fact():
@@ -313,13 +335,13 @@ def chat():
         session['step'] = 'lifestyle'
         return jsonify(reply="🥼 Do you smoke, drink alcohol, or have irregular sleep patterns?")
     
-    # ==================== LIFESTYLE STEP ====================
+    # ==================== LIFESTYLE STEP =
     elif step == 'lifestyle':
         session['lifestyle'] = user_msg
         session['step'] = 'family'
         return jsonify(reply="🥼 Is there any family history of similar illnesses?")
     
-    # ==================== FAMILY HISTORY STEP ====================
+    #  FAMILY HISTORY STEP
     elif step == 'family':
         session['family'] = user_msg
         
@@ -335,7 +357,7 @@ def chat():
             session['step'] = 'final'
             return final_prediction()
     
-    # ==================== CLARIFYING QUESTIONS STEP ====================
+    # CLARIFYING QUESTIONS STEP
     elif step == 'clarify':
         idx = session.get('clarify_index', 0) - 1
         if idx >= 0 and idx < len(session.get('clarifying_questions', [])):
@@ -350,7 +372,7 @@ def chat():
         else:
             return ask_clarifying_question()
     
-    # ==================== FINAL STEP ====================
+    #  FINAL STEP 
     elif step == 'final':
         return final_prediction()
     
@@ -386,31 +408,39 @@ def final_prediction():
             text += f"{i}. {p}\n"
     
     text += f"\n⚠️ **Please consult a healthcare professional for proper diagnosis and treatment.**\n"
-    text += f"\nThank you for using MyAI, {session.get('name', 'User')}! 🙏"
+    # Prefer authenticated username if available, otherwise fall back to chat-collected name
+    display_name = session.get('username') or session.get('name') or 'User'
+    text += f"\nThank you for using MyAI, {display_name}! 🙏"
     
-    # Save to database
+    # Save to database: only save if a logged-in user exists. This ensures every consultation
+    # belongs to a user and prevents trusting frontend identity.
     try:
-        consultation = UserConsultation(
-            name=session.get('name', 'Unknown'),
-            age=session.get('age'),
-            gender=session.get('gender'),
-            predicted_disease=disease,
-            symptoms=', '.join(session.get('symptoms', [])),
-            severity=session.get('severity'),
-            days=session.get('days'),
-            pre_existing=session.get('preexist'),
-            lifestyle=session.get('lifestyle'),
-            family_history=session.get('family'),
-            confidence=conf
-        )
-        db.session.add(consultation)
-        db.session.commit()
+        user_id = session.get('user_id')
+        if user_id:
+            consultation = Consultation(
+                user_id=user_id,
+                age=session.get('age'),
+                gender=session.get('gender'),
+                predicted_disease=disease,
+                symptoms=', '.join(session.get('symptoms', [])),
+                severity=session.get('severity'),
+                days=session.get('days'),
+                pre_existing=session.get('preexist'),
+                lifestyle=session.get('lifestyle'),
+                family_history=session.get('family'),
+                confidence=conf
+            )
+            db.session.add(consultation)
+            db.session.commit()
+        else:
+            # Do not save anonymous consultations. Encourage the user to register/login to save history.
+            text += "\n\n🔐 To save this consultation to your history, please register or log in."
     except Exception as e:
         print(f"Database error: {e}")
     
     return jsonify(reply=text)
 
-# ==================== CASUAL CONVERSATION HANDLER ====================
+# CASUAL CONVERSATION HANDLER 
 @app.route('/handle-casual', methods=['POST'])
 def handle_casual():
     user_msg = request.json.get('message', '').lower()
@@ -426,7 +456,7 @@ def handle_casual():
     
     return jsonify(is_casual=False)
 
-# ==================== ERROR HANDLERS ====================
+#  ERROR HANDLERS 
 @app.route('/hospitals')
 def hospitals():
     return render_template('hospitals.html')
@@ -440,6 +470,66 @@ def serve_ai_image():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+
+# ---------------------- Authentication Routes ----------------------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Register a new user. Passwords are hashed using werkzeug's generate_password_hash.
+    Minimal checks are performed: username uniqueness and non-empty password.
+    After successful registration the user is logged in (session stores user_id and role).
+    """
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if not username or not password:
+            return render_template('register.html', error='Username and password are required')
+
+        existing = User.query.filter_by(username=username).first()
+        if existing:
+            return render_template('register.html', error='Username already taken')
+
+        pw_hash = generate_password_hash(password)
+        user = User(username=username, password_hash=pw_hash, role='user')
+        db.session.add(user)
+        db.session.commit()
+
+        # Log the user in
+        session['user_id'] = user.id
+        session['role'] = user.role
+        session['username'] = user.username
+        return redirect(url_for('index'))
+
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login existing users. Uses check_password_hash to verify passwords.
+    Stores `session['user_id']` and `session['role']` on success.
+    """
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        user = User.query.filter_by(username=username).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            return render_template('login.html', error='Invalid credentials')
+
+        session['user_id'] = user.id
+        session['role'] = user.role
+        session['username'] = user.username
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
@@ -460,10 +550,10 @@ def not_found(error):
 def server_error(error):
     return jsonify(error="Server error"), 500
 
-# ==================== CREATE TABLES ====================
+# CREATE TABLES
 with app.app_context():
     db.create_all()
 
-# ==================== RUN APP ====================
+# RUN APP
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
