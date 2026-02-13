@@ -11,3 +11,6 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 wheel==0.40.0
 
+
+rapidfuzz
+
