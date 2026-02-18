@@ -1,12 +1,19 @@
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_from_directory, redirect, url_for
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import re, random, pandas as pd, numpy as np, csv, warnings
-from sklearn import preprocessing
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+import re, random, csv, warnings
+from werkzeug.security import generate_password_hash, check_password_hash
+# Heavy ML libraries are imported lazily below; avoid top-level import failures
 from difflib import get_close_matches
+try:
+    from rapidfuzz import process, fuzz
+    _HAS_RAPIDFUZZ = True
+except Exception:
+    # rapidfuzz not installed — fallback to difflib-based matching
+    process = None
+    fuzz = None
+    _HAS_RAPIDFUZZ = False
 import os
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -27,11 +34,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 #  DATABASE MODELS
-class UserConsultation(db.Model):
-    __tablename__ = 'user_consultations'
-    
+# New users table to manage authentication and roles
+class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='user')  # 'user' or 'admin'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# Consultations now belong to users. Renamed table from `user_consultations` to `consultations`.
+class Consultation(db.Model):
+    __tablename__ = 'consultations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     age = db.Column(db.Integer)
     gender = db.Column(db.String(20))
     predicted_disease = db.Column(db.String(200), nullable=False)
@@ -44,26 +62,50 @@ class UserConsultation(db.Model):
     confidence = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-#  LOAD ML MODEL
-training = pd.read_csv("Training.csv")
-testing = pd.read_csv("Testing.csv")
-training.columns = training.columns.str.replace(r"\.\d+$", "", regex=True)
-testing.columns = testing.columns.str.replace(r"\.\d+$", "", regex=True)
-training = training.loc[:, ~training.columns.duplicated()]
-testing = testing.loc[:, ~testing.columns.duplicated()]
+    # Relationship helper (optional)
+    user = db.relationship('User', backref=db.backref('consultations', lazy=True))
 
-cols = training.columns[:-1]
-x = training[cols]
-y = training['prognosis']
-le = preprocessing.LabelEncoder()
-y = le.fit_transform(y)
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
-model = RandomForestClassifier(n_estimators=300, random_state=42)
-model.fit(x_train, y_train)
+#  LOAD ML MODEL (lazy import with graceful fallback)
+try:
+    import pandas as pd
+    import numpy as np
+    from sklearn import preprocessing
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split
 
-# Disease mapping
-disease_map = {idx: disease for idx, disease in enumerate(le.classes_)}
-symptoms_dict = {symptom: idx for idx, symptom in enumerate(x.columns)}
+    training = pd.read_csv("Training.csv")
+    testing = pd.read_csv("Testing.csv")
+    training.columns = training.columns.str.replace(r"\.\d+$", "", regex=True)
+    testing.columns = testing.columns.str.replace(r"\.\d+$", "", regex=True)
+    training = training.loc[:, ~training.columns.duplicated()]
+    testing = testing.loc[:, ~testing.columns.duplicated()]
+
+    cols = training.columns[:-1]
+    x = training[cols]
+    y = training['prognosis']
+    le = preprocessing.LabelEncoder()
+    y = le.fit_transform(y)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
+    model = RandomForestClassifier(n_estimators=300, random_state=42)
+    model.fit(x_train, y_train)
+
+    # Disease mapping
+    disease_map = {idx: disease for idx, disease in enumerate(le.classes_)}
+    symptoms_dict = {symptom: idx for idx, symptom in enumerate(x.columns)}
+
+    _MODEL_AVAILABLE = True
+except Exception as e:
+    print(f"Model load error (ML unavailable): {e}")
+    training = None
+    testing = None
+    cols = []
+    x = None
+    y = None
+    le = None
+    model = None
+    disease_map = {}
+    symptoms_dict = {}
+    _MODEL_AVAILABLE = False
 
 #  LOAD DATA FILES 
 severityDictionary, description_list, precautionDictionary = {}, {}, {}
@@ -94,20 +136,83 @@ load_data()
 
 #  SYMPTOM SYNONYMS
 symptom_synonyms = {
+    # Stomach / Digestive
     "stomach ache": "stomach_pain", "belly pain": "stomach_pain", "tummy pain": "stomach_pain",
-    "cramps": "muscle_cramps", "bloating": "bloating", "nausea": "nausea", "vomiting": "vomiting",
-    "throwing up": "vomiting", "diarrhea": "diarrhoea", "loose motion": "diarrhoea",
-    "constipation": "constipation", "heartburn": "acidity", "acid reflux": "acidity",
-    "indigestion": "indigestion", "gas": "bloating", "loss of appetite": "loss_of_appetite",
-    "weight loss": "weight_loss", "weight gain": "weight_gain", "fever": "high_fever",
-    "high temperature": "high_fever", "cough": "cough", "sore throat": "throat_irritation",
-    "headache": "headache", "dizziness": "dizziness", "fatigue": "fatigue", "weakness": "weakness_in_limbs",
-    "chest pain": "chest_pain", "shortness of breath": "breathlessness", "difficulty breathing": "breathlessness",
-    "chills": "chills", "sweating": "sweating", "joint pain": "joint_pain", "muscle pain": "muscle_pain",
-    "back pain": "back_pain", "neck pain": "neck_pain", "eye pain": "redness_of_eyes",
-    "itching": "itching", "rash": "skin_rash", "anxiety": "anxiety", "depression": "depression",
-    "insomnia": "insomnia", "stress": "anxiety", "hair loss": "loss_of_smell",
+    "abdominal pain": "stomach_pain", "stomach cramps": "stomach_pain",
+    "cramps": "muscle_cramps", "muscle cramp": "muscle_cramps", "leg cramps": "muscle_cramps",
+    "bloating": "bloating", "bloated stomach": "bloating", "abdominal bloating": "bloating",
+    "nausea": "nausea", "feeling sick": "nausea", "queasy": "nausea",
+    "vomiting": "vomiting", "throwing up": "vomiting", "puking": "vomiting",
+    "diarrhea": "diarrhoea", "loose motion": "diarrhoea", "watery stool": "diarrhoea",
+    "constipation": "constipation", "hard stool": "constipation",
+    "heartburn": "acidity", "acid reflux": "acidity", "burning chest": "acidity",
+    "indigestion": "indigestion", "upset stomach": "indigestion",
+    "gas": "bloating", "flatulence": "bloating",
+    "loss of appetite": "loss_of_appetite", "no appetite": "loss_of_appetite",
+    "weight loss": "weight_loss", "unintentional weight loss": "weight_loss",
+    "weight gain": "weight_gain", "rapid weight gain": "weight_gain",
+
+    # Fever / Infection
+    "fever": "high_fever", "high temperature": "high_fever", "elevated temperature": "high_fever",
+    "low grade fever": "mild_fever",
+    "chills": "chills", "shivering": "chills",
+    "sweating": "sweating", "night sweats": "night_sweats",
+
+    # Respiratory
+    "cough": "cough", "dry cough": "dry_cough", "wet cough": "productive_cough",
+    "sore throat": "throat_irritation", "scratchy throat": "throat_irritation",
+    "shortness of breath": "breathlessness", "difficulty breathing": "breathlessness",
+    "wheezing": "wheezing", "runny nose": "runny_nose", "stuffy nose": "nasal_congestion",
+    "blocked nose": "nasal_congestion", "sneezing": "sneezing",
+
+    # Pain Related
+    "headache": "headache", "migraine": "migraine", "severe headache": "headache",
+    "dizziness": "dizziness", "lightheaded": "dizziness", "vertigo": "vertigo",
+    "fatigue": "fatigue", "tiredness": "fatigue", "exhaustion": "fatigue",
+    "weakness": "weakness_in_limbs", "body weakness": "weakness_in_limbs",
+    "chest pain": "chest_pain", "tight chest": "chest_pain",
+    "joint pain": "joint_pain", "aching joints": "joint_pain",
+    "muscle pain": "muscle_pain", "body ache": "muscle_pain",
+    "back pain": "back_pain", "lower back pain": "back_pain",
+    "neck pain": "neck_pain", "stiff neck": "neck_pain",
+    "ear pain": "ear_pain", "earache": "ear_pain",
+    "eye pain": "eye_pain", "red eyes": "redness_of_eyes",
+
+    # Skin
+    "itching": "itching", "itchy skin": "itching",
+    "rash": "skin_rash", "skin eruption": "skin_rash",
+    "hives": "hives", "dry skin": "dry_skin",
+    "acne": "acne", "pimples": "acne",
+
+    # Mental Health
+    "anxiety": "anxiety", "stress": "anxiety", "panic": "panic_attack",
+    "depression": "depression", "low mood": "depression",
+    "insomnia": "insomnia", "trouble sleeping": "insomnia",
+    "mood swings": "mood_swings", "irritability": "irritability",
+
+    # Neurological
+    "numbness": "numbness", "tingling": "tingling_sensation",
+    "seizure": "seizure", "fainting": "fainting",
+    "memory loss": "memory_loss", "confusion": "confusion",
+
+    # Urinary
+    "burning urination": "painful_urination",
+    "frequent urination": "frequent_urination",
+    "blood in urine": "blood_in_urine",
+
+    # Cardiovascular
+    "palpitations": "palpitations",
+    "irregular heartbeat": "irregular_heartbeat",
+    "high blood pressure": "hypertension",
+    "low blood pressure": "hypotension",
+
+    # General
+    "swelling": "swelling", "inflammation": "inflammation",
+    "dehydration": "dehydration",
+    "loss of smell": "loss_of_smell",
+    "loss of taste": "loss_of_taste"
 }
+
 
 # RANDOM FACTS 
 body_facts = [
@@ -169,19 +274,56 @@ body_facts = [
 
 # HELPER FUNCTIONS
 def extract_symptoms(text, available_symptoms):
+    """Extract symptoms from free text using exact and fuzzy matching.
+
+    - Uses RapidFuzz when available to handle misspellings.
+    - Matches both known synonyms (keys in `symptom_synonyms`) and
+      model symptom names (available_symptoms) after removing underscores.
+    Returns a list of canonical symptom keys (those used by the model).
+    """
     text = text.lower()
-    found_symptoms = []
-    
+    found = set()
+
+    # Exact substring matches for synonyms (fast, reliable)
     for synonym, standard in symptom_synonyms.items():
         if synonym in text:
-            found_symptoms.append(standard)
-    
-    for symptom in available_symptoms:
-        symptom_clean = symptom.replace('_', ' ').lower()
-        if symptom_clean in text:
-            found_symptoms.append(symptom)
-    
-    return list(set(found_symptoms))
+            found.add(standard)
+
+    # Exact substring matches for model symptom names (display form)
+    display_to_canonical = {s.replace('_', ' ').lower(): s for s in available_symptoms}
+    for display, canonical in display_to_canonical.items():
+        if display in text:
+            found.add(canonical)
+
+    # If rapidfuzz is available use fuzzy matching to catch misspellings
+    if _HAS_RAPIDFUZZ:
+        # build choices: synonyms (keys) and display symptom names
+        choices = list(symptom_synonyms.keys()) + list(display_to_canonical.keys())
+        # extract potential matches with reasonable threshold
+        matches = process.extract(text, choices, scorer=fuzz.ratio, limit=20)
+        for match_text, score, _ in matches:
+            if score >= 80:
+                # map to canonical symptom if possible
+                if match_text in symptom_synonyms:
+                    found.add(symptom_synonyms[match_text])
+                elif match_text in display_to_canonical:
+                    found.add(display_to_canonical[match_text])
+    else:
+        # Fallback: use difflib get_close_matches on tokenized words/phrases
+        tokens = re.findall(r"[a-zA-Z ]{3,}", text)
+        candidates = list(symptom_synonyms.keys()) + list(display_to_canonical.keys())
+        for tok in tokens:
+            tok = tok.strip()
+            if not tok:
+                continue
+            close = get_close_matches(tok, candidates, n=3, cutoff=0.8)
+            for c in close:
+                if c in symptom_synonyms:
+                    found.add(symptom_synonyms[c])
+                elif c in display_to_canonical:
+                    found.add(display_to_canonical[c])
+
+    return list(found)
 
 def predict_disease(symptoms_list):
     input_vector = [0] * len(cols)
@@ -211,8 +353,13 @@ def get_clarifying_questions(disease, current_symptoms):
 #  ROUTES 
 @app.route('/')
 def index():
-    session.clear()
-    session['step'] = 'welcome'
+    # Require login to access the chat. Redirect to login if not authenticated.
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    
+    # Initialize conversation step if not set
+    if 'step' not in session:
+        session['step'] = 'welcome'
     return render_template('index.html')
 
 @app.route('/reset')
@@ -223,13 +370,18 @@ def reset():
 
 @app.route('/history')
 def history():
-    name = request.args.get('name', '')
-    if name:
-        consultations = UserConsultation.query.filter_by(name=name).order_by(
-            UserConsultation.created_at.desc()
-        ).all()
-        return render_template('history.html', consultations=consultations, name=name)
-    return render_template('history.html', consultations=[], name='')
+    # Require login to view history. Admins can view all consultations.
+    user_id = session.get('user_id')
+    role = session.get('role')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    if role == 'admin':
+        consultations = Consultation.query.order_by(Consultation.created_at.desc()).all()
+    else:
+        consultations = Consultation.query.filter_by(user_id=user_id).order_by(Consultation.created_at.desc()).all()
+
+    return render_template('history.html', consultations=consultations)
 
 @app.route('/fact')
 def get_fact():
@@ -313,13 +465,13 @@ def chat():
         session['step'] = 'lifestyle'
         return jsonify(reply="🥼 Do you smoke, drink alcohol, or have irregular sleep patterns?")
     
-    # ==================== LIFESTYLE STEP ====================
+    # ==================== LIFESTYLE STEP =
     elif step == 'lifestyle':
         session['lifestyle'] = user_msg
         session['step'] = 'family'
         return jsonify(reply="🥼 Is there any family history of similar illnesses?")
     
-    # ==================== FAMILY HISTORY STEP ====================
+    #  FAMILY HISTORY STEP
     elif step == 'family':
         session['family'] = user_msg
         
@@ -335,7 +487,7 @@ def chat():
             session['step'] = 'final'
             return final_prediction()
     
-    # ==================== CLARIFYING QUESTIONS STEP ====================
+    # CLARIFYING QUESTIONS STEP
     elif step == 'clarify':
         idx = session.get('clarify_index', 0) - 1
         if idx >= 0 and idx < len(session.get('clarifying_questions', [])):
@@ -350,7 +502,7 @@ def chat():
         else:
             return ask_clarifying_question()
     
-    # ==================== FINAL STEP ====================
+    #  FINAL STEP 
     elif step == 'final':
         return final_prediction()
     
@@ -377,7 +529,6 @@ def final_prediction():
     
     text = f"🩺 **Diagnosis Result**\n\n"
     text += f"Based on your symptoms, you are likely suffering from:\n**{disease}**\n\n"
-    text += f"📊 Confidence: {conf*100:.1f}%\n\n"
     text += f"📝 **About this condition:**\n{about}\n\n"
     
     if precautions:
@@ -386,31 +537,39 @@ def final_prediction():
             text += f"{i}. {p}\n"
     
     text += f"\n⚠️ **Please consult a healthcare professional for proper diagnosis and treatment.**\n"
-    text += f"\nThank you for using MyAI, {session.get('name', 'User')}! 🙏"
+    # Prefer authenticated username if available, otherwise fall back to chat-collected name
+    display_name = session.get('username') or session.get('name') or 'User'
+    text += f"\nThank you for using MyAI, {display_name}! 🙏"
     
-    # Save to database
+    # Save to database: only save if a logged-in user exists. This ensures every consultation
+    # belongs to a user and prevents trusting frontend identity.
     try:
-        consultation = UserConsultation(
-            name=session.get('name', 'Unknown'),
-            age=session.get('age'),
-            gender=session.get('gender'),
-            predicted_disease=disease,
-            symptoms=', '.join(session.get('symptoms', [])),
-            severity=session.get('severity'),
-            days=session.get('days'),
-            pre_existing=session.get('preexist'),
-            lifestyle=session.get('lifestyle'),
-            family_history=session.get('family'),
-            confidence=conf
-        )
-        db.session.add(consultation)
-        db.session.commit()
+        user_id = session.get('user_id')
+        if user_id:
+            consultation = Consultation(
+                user_id=user_id,
+                age=session.get('age'),
+                gender=session.get('gender'),
+                predicted_disease=disease,
+                symptoms=', '.join(session.get('symptoms', [])),
+                severity=session.get('severity'),
+                days=session.get('days'),
+                pre_existing=session.get('preexist'),
+                lifestyle=session.get('lifestyle'),
+                family_history=session.get('family'),
+                confidence=conf
+            )
+            db.session.add(consultation)
+            db.session.commit()
+        else:
+            # Do not save anonymous consultations. Encourage the user to register/login to save history.
+            text += "\n\n🔐 To save this consultation to your history, please register or log in."
     except Exception as e:
         print(f"Database error: {e}")
     
     return jsonify(reply=text)
 
-# ==================== CASUAL CONVERSATION HANDLER ====================
+# CASUAL CONVERSATION HANDLER 
 @app.route('/handle-casual', methods=['POST'])
 def handle_casual():
     user_msg = request.json.get('message', '').lower()
@@ -426,7 +585,7 @@ def handle_casual():
     
     return jsonify(is_casual=False)
 
-# ==================== ERROR HANDLERS ====================
+#  ERROR HANDLERS 
 @app.route('/hospitals')
 def hospitals():
     return render_template('hospitals.html')
@@ -440,6 +599,66 @@ def serve_ai_image():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+
+# ---------------------- Authentication Routes ----------------------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Register a new user. Passwords are hashed using werkzeug's generate_password_hash.
+    Minimal checks are performed: username uniqueness and non-empty password.
+    After successful registration the user is logged in (session stores user_id and role).
+    """
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if not username or not password:
+            return render_template('register.html', error='Username and password are required')
+
+        existing = User.query.filter_by(username=username).first()
+        if existing:
+            return render_template('register.html', error='Username already taken')
+
+        pw_hash = generate_password_hash(password)
+        user = User(username=username, password_hash=pw_hash, role='user')
+        db.session.add(user)
+        db.session.commit()
+
+        # Log the user in
+        session['user_id'] = user.id
+        session['role'] = user.role
+        session['username'] = user.username
+        return redirect(url_for('index'))
+
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login existing users. Uses check_password_hash to verify passwords.
+    Stores `session['user_id']` and `session['role']` on success.
+    """
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        user = User.query.filter_by(username=username).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            return render_template('login.html', error='Invalid credentials')
+
+        session['user_id'] = user.id
+        session['role'] = user.role
+        session['username'] = user.username
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
@@ -460,10 +679,10 @@ def not_found(error):
 def server_error(error):
     return jsonify(error="Server error"), 500
 
-# ==================== CREATE TABLES ====================
+# CREATE TABLES
 with app.app_context():
     db.create_all()
 
-# ==================== RUN APP ====================
+# RUN APP
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

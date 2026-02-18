@@ -352,8 +352,21 @@
     <div class="main-container">
         <div class="chat-container">
             <div class="chat-header">
-                <h1>🏥 MyAI</h1>
-                <p>Your Healthcare Assistant</p>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <h1>🏥 MyAI</h1>
+                        <p>Your Healthcare Assistant</p>
+                    </div>
+                    <div style="text-align:right;font-size:14px;">
+                        {% if session.get('user_id') %}
+                            <div>Signed in as <strong>{{ session.get('username') }}</strong></div>
+                            <a href="/logout" style="color:white; text-decoration:underline;">Logout</a>
+                        {% else %}
+                            <a href="/login" style="color:white; text-decoration:underline; margin-right:10px;">Login</a>
+                            <a href="/register" style="color:white; text-decoration:underline;">Register</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <div class="messages-container" id="messagesContainer">
@@ -490,10 +503,8 @@
         }
 
         function openHistory() {
-            const name = prompt('Enter your name to view history:');
-            if (name) {
-                window.location.href = `/history?name=${encodeURIComponent(name)}`;
-            }
+            // History is protected server-side; simply navigate there.
+            window.location.href = '/history';
         }
 
         function openHospitals() {
