@@ -1,0 +1,94 @@
+{
+  "emergencyNumber": "911",
+  "symptoms": [
+    {
+      "id": 1,
+      "title": "Chest Pain",
+      "description": "Severe chest pressure, pain radiating to arm/jaw",
+      "icon": "💔"
+    },
+    {
+      "id": 2,
+      "title": "Difficulty Breathing",
+      "description": "Shortness of breath, wheezing, gasping for air",
+      "icon": "😮‍💨"
+    },
+    {
+      "id": 3,
+      "title": "Severe Bleeding",
+      "description": "Uncontrolled bleeding, deep wounds",
+      "icon": "🩸"
+    },
+    {
+      "id": 4,
+      "title": "Sudden Weakness",
+      "description": "Sudden numbness, face drooping, speech difficulty (stroke signs)",
+      "icon": "⚡"
+    },
+    {
+      "id": 5,
+      "title": "Loss of Consciousness",
+      "description": "Fainting, unresponsiveness, seizures",
+      "icon": "😵"
+    },
+    {
+      "id": 6,
+      "title": "Severe Allergic Reaction",
+      "description": "Swelling, difficulty breathing, hives",
+      "icon": "🤧"
+    },
+    {
+      "id": 7,
+      "title": "Poisoning",
+      "description": "Ingestion of harmful substances",
+      "icon": "☠️"
+    },
+    {
+      "id": 8,
+      "title": "Severe Burns",
+      "description": "Large area burns, electrical or chemical burns",
+      "icon": "🔥"
+    }
+  ],
+  "centers": [
+    {
+      "id": 1,
+      "name": "City General Hospital",
+      "address": "123 Main Street, Downtown",
+      "phone": "(555) 123-4567",
+      "distance": "0.5 miles",
+      "open24Hours": true
+    },
+    {
+      "id": 2,
+      "name": "University Medical Center",
+      "address": "456 University Ave, Midtown",
+      "phone": "(555) 234-5678",
+      "distance": "1.2 miles",
+      "open24Hours": true
+    },
+    {
+      "id": 3,
+      "name": "St. Mary's Emergency",
+      "address": "789 Health Blvd, Westside",
+      "phone": "(555) 345-6789",
+      "distance": "2.0 miles",
+      "open24Hours": true
+    },
+    {
+      "id": 4,
+      "name": "Regional Trauma Center",
+      "address": "321 Emergency Way, Northside",
+      "phone": "(555) 456-7890",
+      "distance": "3.5 miles",
+      "open24Hours": true
+    }
+  ],
+  "instructions": [
+    "Call emergency services immediately if someone is in immediate danger",
+    "Do not move injured persons unless they are in further danger",
+    "Stay calm and provide clear information to dispatchers",
+    "If trained, provide first aid while waiting for help",
+    "Keep a list of current medications and allergies ready to share"
+  ]
+}

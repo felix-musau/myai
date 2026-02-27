@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": 1772110373710,
+      "username": "Dan",
+      "email": "felix.musau1@student.moringaschool.com",
+      "password_hash": "$2a$10$yatjgoipl/hh2Om26YvDQuoHguGHFGz5tV7OuMke/qwdwDWd1pc8y",
+      "is_verified": false
+    },
+    {
+      "id": 1772113254408,
+      "username": "Alvin",
+      "email": "fellyMfelix@gmail.com",
+      "password_hash": "$2a$10$JHktrWOFsB7EKIPJW5/.N.ICl5f8HF5BMPSvKf3JduO81NmXofnLW",
+      "is_verified": true
+    }
+  ]
+}

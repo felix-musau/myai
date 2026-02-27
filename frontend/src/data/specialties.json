@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "name": "Cardiology",
+    "description": "Heart and cardiovascular system",
+    "icon": "❤️",
+    "commonSymptoms": ["Chest pain", "Heart palpitations", "Shortness of breath", "Dizziness"]
+  },
+  {
+    "id": 2,
+    "name": "Dermatology",
+    "description": "Skin, hair, and nails",
+    "icon": "🧴",
+    "commonSymptoms": ["Rash", "Skin lesions", "Acne", "Unusual moles"]
+  },
+  {
+    "id": 3,
+    "name": "General Medicine",
+    "description": "Primary care and general health",
+    "icon": "👨‍⚕️",
+    "commonSymptoms": ["Fever", "Fatigue", "General discomfort", "Routine checkups"]
+  },
+  {
+    "id": 4,
+    "name": "Neurology",
+    "description": "Brain and nervous system",
+    "icon": "🧠",
+    "commonSymptoms": ["Headaches", "Numbness", "Memory issues", "Seizures"]
+  },
+  {
+    "id": 5,
+    "name": "Orthopedics",
+    "description": "Bones, joints, and muscles",
+    "icon": "🦴",
+    "commonSymptoms": ["Joint pain", "Back pain", "Fractures", "Sports injuries"]
+  },
+  {
+    "id": 6,
+    "name": "Pediatrics",
+    "description": "Children's health (0-18 years)",
+    "icon": "👶",
+    "commonSymptoms": ["Child fever", "Growth concerns", "Vaccination questions", "Developmental issues"]
+  },
+  {
+    "id": 7,
+    "name": "Psychiatry",
+    "description": "Mental health and behavior",
+    "icon": "🧘",
+    "commonSymptoms": ["Anxiety", "Depression", "Sleep problems", "Stress"]
+  },
+  {
+    "id": 8,
+    "name": "Gastroenterology",
+    "description": "Digestive system",
+    "icon": "🫁",
+    "commonSymptoms": ["Stomach pain", "Digestion issues", "Nausea", "Bowel problems"]
+  },
+  {
+    "id": 9,
+    "name": "Endocrinology",
+    "description": "Hormones and metabolism",
+    "icon": "⚗️",
+    "commonSymptoms": ["Weight changes", "Thyroid issues", "Diabetes concerns", "Fatigue"]
+  },
+  {
+    "id": 10,
+    "name": "Pulmonology",
+    "description": "Lungs and respiratory system",
+    "icon": "🫁",
+    "commonSymptoms": ["Coughing", "Wheezing", "Breathing difficulty", "Asthma"]
+  },
+  {
+    "id": 11,
+    "name": "Ophthalmology",
+    "description": "Eye care and vision",
+    "icon": "👁️",
+    "commonSymptoms": ["Vision changes", "Eye pain", "Red eyes", "Floaters"]
+  },
+  {
+    "id": 12,
+    "name": "Otolaryngology",
+    "description": "Ear, nose, and throat",
+    "icon": "👂",
+    "commonSymptoms": ["Ear pain", "Sore throat", "Sinus issues", "Hearing problems"]
+  }
+]

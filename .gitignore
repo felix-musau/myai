@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.venv/
+.venv-ml/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite*
+db/users.json
+db/consultations.json
+
+# Build
+dist/
+build/
+.next/
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated
+model.joblib
+
+# ML Service
+.venv-ml/
