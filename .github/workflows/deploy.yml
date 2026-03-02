@@ -1,0 +1,41 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-ml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy ML Service
+        run: |
+          echo "Deploy ML to Render via webhook"
+          # Add your Render deploy hook URL here
+          # curl -X POST $RENDER_ML_DEPLOY_HOOK
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: deploy-ml
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy Backend
+        run: |
+          echo "Deploy Backend to Render via webhook"
+          # Add your Render deploy hook URL here
+          # curl -X POST $RENDER_BACKEND_DEPLOY_HOOK
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy Frontend
+        run: |
+          echo "Deploy Frontend to Render via webhook"
+          # Add your Render deploy hook URL here
+          # curl -X POST $RENDER_FRONTEND_DEPLOY_HOOK
