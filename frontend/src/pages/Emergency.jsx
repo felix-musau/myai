@@ -12,7 +12,7 @@ export default function Emergency() {
       
       {/* Emergency Banner - Keep red for emergency urgency */}
       <div className="bg-red-600/90 backdrop-blur-sm text-white py-4 px-6 relative z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <span className="text-3xl">⚠️</span>
             <div>
@@ -20,13 +20,15 @@ export default function Emergency() {
               <p className="text-red-100">If you or someone else is in immediate danger, call for help now</p>
             </div>
           </div>
-          <a
-            href={`tel:${emergencyData.emergencyNumber}`}
-            className="glass-button-primary px-8 py-4 rounded-xl font-bold text-xl flex items-center gap-3"
-          >
-            <span className="text-3xl">📞</span>
-            Call {emergencyData.emergencyNumber}
-          </a>
+          <div className="flex gap-3 flex-wrap">
+            <a
+              href={`tel:${emergencyData.emergencyNumber}`}
+              className="glass-button-primary px-6 py-3 rounded-xl font-bold text-lg flex items-center gap-2"
+            >
+              <span className="text-2xl">📞</span>
+              Call {emergencyData.emergencyNumber}
+            </a>
+          </div>
         </div>
       </div>
 
@@ -68,38 +70,86 @@ export default function Emergency() {
           </div>
         </Card>
 
-        {/* Nearby Emergency Centers */}
+        {/* Kenyan Emergency Numbers */}
+        <Card padding="md" shadow="md" className="glass-card">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🇰🇪</span>
+            <h2 className="text-xl font-bold text-gray-800 font-medical">Kenya Emergency Numbers</h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            <a
+              href={`tel:${emergencyData.kenyanEmergency.police}`}
+              className="bg-blue-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+            >
+              <span className="text-2xl block mb-1">👮</span>
+              <span className="font-bold">Police</span>
+              <span className="block text-lg">{emergencyData.kenyanEmergency.police}</span>
+            </a>
+            <a
+              href={`tel:${emergencyData.kenyanEmergency.ambulance}`}
+              className="bg-red-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+            >
+              <span className="text-2xl block mb-1">🚑</span>
+              <span className="font-bold">Ambulance</span>
+              <span className="block text-lg">{emergencyData.kenyanEmergency.ambulance}</span>
+            </a>
+            <a
+              href={`tel:${emergencyData.kenyanEmergency.fire}`}
+              className="bg-orange-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+            >
+              <span className="text-2xl block mb-1">🔥</span>
+              <span className="font-bold">Fire</span>
+              <span className="block text-lg">{emergencyData.kenyanEmergency.fire}</span>
+            </a>
+            <a
+              href={`tel:${emergencyData.kenyanEmergency.redCross}`}
+              className="bg-red-800/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+            >
+              <span className="text-2xl block mb-1">🟥</span>
+              <span className="font-bold">Red Cross</span>
+              <span className="block text-lg">{emergencyData.kenyanEmergency.redCross}</span>
+            </a>
+            <a
+              href={`tel:${emergencyData.kenyanEmergency.generalEmergency}`}
+              className="bg-green-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+            >
+              <span className="text-2xl block mb-1">⚡</span>
+              <span className="font-bold">General</span>
+              <span className="block text-lg">{emergencyData.kenyanEmergency.generalEmergency}</span>
+            </a>
+          </div>
+        </Card>
+
+        {/* Kenyan Hospitals */}
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-2xl">🏥</span>
-            <h2 className="text-xl font-bold text-gray-800 font-medical">Nearby Emergency Centers</h2>
+            <h2 className="text-xl font-bold text-gray-800 font-medical">Major Kenya Hospitals</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {emergencyData.centers.map((center) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {emergencyData.kenyanHospitals.map((hospital) => (
               <div
-                key={center.id}
+                key={hospital.id}
                 className="bg-white/60 backdrop-blur border border-gray-200/50 rounded-xl p-4 hover:shadow-md transition"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-gray-800 font-medical">{center.name}</h3>
-                  {center.open24Hours && (
+                  <h3 className="font-bold text-gray-800 font-medical">{hospital.name}</h3>
+                  {hospital.open24Hours && (
                     <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
                       24/7
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600 text-sm mb-2">📍 {center.address}</p>
-                <p className="text-gray-600 text-sm mb-3">📞 {center.phone}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">📏 {center.distance}</span>
-                  <Button
-                    variant="glassPrimary"
-                    size="sm"
-                    onClick={() => window.location.href = `tel:${center.phone}`}
-                  >
-                    Call Now
-                  </Button>
-                </div>
+                <p className="text-gray-600 text-sm mb-1">📍 {hospital.address}</p>
+                <p className="text-gray-600 text-sm mb-1">📞 {hospital.phone}</p>
+                <p className="text-gray-500 text-xs mb-3">🏷️ {hospital.type}</p>
+                <Button
+                  variant="glassPrimary"
+                  size="sm"
+                  onClick={() => window.location.href = `tel:${hospital.phone}`}
+                >
+                  Call Now
+                </Button>
               </div>
             ))}
           </div>

@@ -25,24 +25,30 @@ router.post('/predict', authMiddleware, async (req, res) => {
     
     const data = await response.json()
     
-    // Save consultation to database
-    const consultFile = path.join(__dirname, '..', 'db', 'consultations.json')
-    const adapter = new JSONFile(consultFile)
-    const db = new Low(adapter)
-    await db.read()
-    db.data = db.data || { consultations: [] }
+    // Save consultation to database (only if user explicitly requests diagnosis)
+    if (req.body.saveConsult !== false) {
+      const consultFile = path.join(__dirname, '..', 'db', 'consultations.json')
+      const adapter = new JSONFile(consultFile)
+      const db = new Low(adapter)
+      await db.read()
+      db.data = db.data || { consultations: [] }
+      
+      db.data.consultations.push({
+        id: Date.now(),
+        user_id: req.user.id,
+        username: req.user.username,
+        symptoms,
+        disease: data.disease,
+        created_at: new Date().toISOString()
+      })
+      await db.write()
+    }
     
-    db.data.consultations.push({
-      id: Date.now(),
-      user_id: req.user.id,
-      username: req.user.username,
-      symptoms,
+    // Return both disease and confidence (confidence is internal use only)
+    res.json({ 
       disease: data.disease,
-      created_at: new Date().toISOString()
+      confidence: data.confidence 
     })
-    await db.write()
-    
-    res.json({ disease: data.disease })
   } catch (err) {
     console.error('Predict error:', err)
     res.status(500).json({ error: err.message })

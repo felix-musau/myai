@@ -1,10 +1,11 @@
 const express = require('express')
 const router = express.Router()
+const authMiddleware = require('../middleware/auth')
 
 // POST /api/analyze-lab
 // Mock endpoint - returns structured analysis
 // Ready for AI integration later
-router.post('/analyze-lab', (req, res) => {
+router.post('/analyze-lab', authMiddleware, (req, res) => {
   const { testType, values, fileName } = req.body
 
   // Log the request

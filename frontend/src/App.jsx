@@ -801,7 +801,7 @@ export default function App() {
   
   async function checkAuth() {
     try {
-      const res = await axios.get('/api/auth/check')
+      const res = await axios.get('/api/auth/check', { withCredentials: true })
       if (res.data.authenticated) {
         setUser(res.data.username)
       }

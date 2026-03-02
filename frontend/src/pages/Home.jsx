@@ -49,7 +49,7 @@ export default function Home() {
   
   // Chat state
   const [messages, setMessages] = useState([
-    { sender: 'bot', text: '👋 Hello! I\'m MyAI, your healthcare✨ Welcome to the assistant.\n\n HealthCare ChatBot!\n\n➡️ Say "hello" or "hi" to start your consultation.' }
+    { sender: 'bot', text: '👋 Hello! I\'m MyAI, your healthcare assistant. How can I help you today?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -64,22 +64,27 @@ export default function Home() {
   // Mobile view state
   const [mobileView, setMobileView] = useState('facts') // 'facts' or 'chat'
 
+  // Use ref for factIndex to avoid stale closure in interval
+  const factIndexRef = useRef(0)
+
   useEffect(() => {
     loadFact()
     const interval = setInterval(() => {
-      setFactIndex(prev => {
-        const nextIndex = prev + 1
-        loadFactAtIndex(nextIndex)
-        return nextIndex
-      })
-    }, 3000)
+      if (mobileView !== 'chat') { // pause when chat is showing on mobile
+        // Increment the ref and state
+        factIndexRef.current += 1
+        setFactIndex(factIndexRef.current)
+        loadFactAtIndex(factIndexRef.current)
+      }
+    }, 4000) // Changed from 3000ms to 4000ms (4 seconds)
     return () => clearInterval(interval)
-  }, [])
+  }, [mobileView])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // kept for fallback if API fails
   const loadFactAtIndex = (index) => {
     const allItems = [...bodyFacts, ...proTips]
     const isTip = index % 2 === 1
@@ -97,16 +102,18 @@ export default function Home() {
     try {
       const res = await fetch('/api/fact')
       const data = await res.json()
-      setIsProTip(false)
+      setIsProTip(!!data.isTip)
       setFactVisible(false)
       setTimeout(() => {
         setCurrentFact(data.fact)
         setFactVisible(true)
       }, 300)
     } catch (err) {
-      const isTip = factIndex % 2 === 1
+      // Use the ref to get the current index instead of stale state
+      const currentIndex = factIndexRef.current
+      const isTip = currentIndex % 2 === 1
       setIsProTip(isTip)
-      const selectedIndex = Math.floor(factIndex / 2) % Math.max(bodyFacts.length, proTips.length)
+      const selectedIndex = Math.floor(currentIndex / 2) % Math.max(bodyFacts.length, proTips.length)
       const fact = isTip ? proTips[selectedIndex % proTips.length] : bodyFacts[selectedIndex % bodyFacts.length]
       setCurrentFact(fact)
     }
@@ -121,11 +128,18 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/chat', {
+const res = await fetch('/api/message', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage })
       })
+      if (res.status === 401) {
+        // session expired or not logged in
+        logout()
+        navigate('/login', { replace: true })
+        return
+      }
       const data = await res.json()
       setMessages(prev => [...prev, { sender: 'bot', text: data.reply }])
     } catch (err) {
@@ -138,9 +152,14 @@ export default function Home() {
   const resetChat = async () => {
     if (confirm('Are you sure you want to reset?')) {
       try {
-        await fetch('/api/reset', { method: 'POST' })
+        const res = await fetch('/api/reset', { method: 'POST', credentials: 'include' })
+        if (res.status === 401) {
+          logout()
+          navigate('/login', { replace: true })
+          return
+        }
         setMessages([
-          { sender: 'bot', text: '👋 Hello! I\'m MyAI, your healthcare assistant.\n\n✨ Welcome to the HealthCare ChatBot!\n\n➡️ Say "hello" or "hi" to start your consultation.' }
+          { sender: 'bot', text: '👋 Hello! I\'m MyAI, your healthcare assistant. How can I help you today?' }
         ])
       } catch (err) {
         console.error('Reset error:', err)
@@ -215,7 +234,7 @@ export default function Home() {
               </h2>
             </div>
             <div className="p-6">
-              <div className={`min-h-[120px] flex items-center justify-center rounded-xl p-6 border-l-4 transition-opacity duration-300 ${factVisible ? 'opacity-100' : 'opacity-0'} ${isProTip ? 'bg-gradient-to-br from-green-50 to-teal-50 border-green-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-500'}`}>
+              <div className={`min-h-[120px] flex items-center justify-center rounded-xl p-6 border-l-4 transition-all duration-500 ease-in-out ${factVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} ${isProTip ? 'bg-gradient-to-br from-green-50 to-teal-50 border-green-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-500'}`}>
                 <p className="text-lg text-gray-800 text-center font-medium">
                   {currentFact || 'Loading fascinating facts...'}
                 </p>

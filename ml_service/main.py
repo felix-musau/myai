@@ -68,7 +68,11 @@ def predict(req: PredictRequest):
         pred = model.predict([row])[0]
         disease = str(le.classes_[pred])
         
-        return {'disease': disease}
+        # Get probability/confidence score
+        proba = model.predict_proba([row])[0]
+        confidence = float(max(proba)) * 100  # Convert to percentage
+        
+        return {'disease': disease, 'confidence': confidence}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -1,10 +1,12 @@
 const express = require('express')
 const router = express.Router()
+const authMiddleware = require('../middleware/auth')
 
 // POST /api/request-doctor
 // Mock endpoint - logs request and returns success
 // Ready for database integration later
-router.post('/request-doctor', (req, res) => {
+// require authentication
+router.post('/request-doctor', authMiddleware, (req, res) => {
   const {
     fullName,
     email,

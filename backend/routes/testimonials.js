@@ -1,6 +1,7 @@
 const express = require('express')
 const fs = require('fs')
 const path = require('path')
+const authMiddleware = require('../middleware/auth')
 const router = express.Router()
 
 // Mock testimonials data - can be moved to database later
@@ -29,7 +30,7 @@ function appendReviewToFile(review) {
 
 // GET /api/testimonials
 // Returns all testimonials with average rating
-router.get('/testimonials', (req, res) => {
+router.get('/testimonials', authMiddleware, (req, res) => {
   // Calculate average rating
   const totalRating = testimonials.reduce((sum, t) => sum + t.rating, 0)
   const averageRating = (totalRating / testimonials.length).toFixed(1)
@@ -52,7 +53,7 @@ router.get('/testimonials', (req, res) => {
 })
 
 // POST /api/testimonials - add a new review (not shown immediately)
-router.post('/testimonials', (req, res) => {
+router.post('/testimonials', authMiddleware, (req, res) => {
   const { name, rating, text } = req.body
   if (!name || !rating || !text) {
     return res.status(400).json({ success: false, error: 'name, rating and text required' })

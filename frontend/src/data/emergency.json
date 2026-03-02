@@ -1,5 +1,94 @@
 {
-  "emergencyNumber": "911",
+  "emergencyNumber": "999",
+  "kenyanEmergency": {
+    "police": "999",
+    "ambulance": "999",
+    "fire": "999",
+    "redCross": "1199",
+    "generalEmergency": "112"
+  },
+  "kenyanHospitals": [
+    {
+      "id": 1,
+      "name": "Kenyatta National Hospital",
+      "address": "Hospital Road, Nairobi",
+      "phone": "+254 20 2726300",
+      "type": "National Referral",
+      "open24Hours": true
+    },
+    {
+      "id": 2,
+      "name": "Kenyatta University Referral Hospital",
+      "address": "Kenyatta University, Kahawa",
+      "phone": "+254 20 8704100",
+      "type": "Teaching Hospital",
+      "open24Hours": true
+    },
+    {
+      "id": 3,
+      "name": "Moi Teaching and Referral Hospital",
+      "address": "Nandi Road, Eldoret",
+      "phone": "+254 53 2033141",
+      "type": "Regional Referral",
+      "open24Hours": true
+    },
+    {
+      "id": 4,
+      "name": "Nairobi Hospital",
+      "address": "Argwings Kodhek Road, Nairobi",
+      "phone": "+254 20 2845000",
+      "type": "Private",
+      "open24Hours": true
+    },
+    {
+      "id": 5,
+      "name": "Aga Khan University Hospital",
+      "address": "Third Parklands Avenue, Nairobi",
+      "phone": "+254 20 3662000",
+      "type": "Private",
+      "open24Hours": true
+    },
+    {
+      "id": 6,
+      "name": "Nairobi South Hospital",
+      "address": "Mombasa Road, Nairobi",
+      "phone": "+254 20 6761000",
+      "type": "Private",
+      "open24Hours": true
+    },
+    {
+      "id": 7,
+      "name": "Mombasa Referral Hospital",
+      "address": "Mombasa Road, Mombasa",
+      "phone": "+254 41 2314800",
+      "type": "County Referral",
+      "open24Hours": true
+    },
+    {
+      "id": 8,
+      "name": "Kisumu County Referral Hospital",
+      "address": "Kisumu-Busia Road, Kisumu",
+      "phone": "+254 57 2020801",
+      "type": "County Referral",
+      "open24Hours": true
+    },
+    {
+      "id": 9,
+      "name": "Kenya Red Cross Emergency",
+      "address": "Nairobi",
+      "phone": "+254 20 6000999",
+      "type": "Ambulance & Emergency",
+      "open24Hours": true
+    },
+    {
+      "id": 10,
+      "name": "St. Mary's Hospital",
+      "address": "Langata Road, Nairobi",
+      "phone": "+254 20 605341",
+      "type": "Private",
+      "open24Hours": true
+    }
+  ],
   "symptoms": [
     {
       "id": 1,
@@ -50,40 +139,7 @@
       "icon": "🔥"
     }
   ],
-  "centers": [
-    {
-      "id": 1,
-      "name": "City General Hospital",
-      "address": "123 Main Street, Downtown",
-      "phone": "(555) 123-4567",
-      "distance": "0.5 miles",
-      "open24Hours": true
-    },
-    {
-      "id": 2,
-      "name": "University Medical Center",
-      "address": "456 University Ave, Midtown",
-      "phone": "(555) 234-5678",
-      "distance": "1.2 miles",
-      "open24Hours": true
-    },
-    {
-      "id": 3,
-      "name": "St. Mary's Emergency",
-      "address": "789 Health Blvd, Westside",
-      "phone": "(555) 345-6789",
-      "distance": "2.0 miles",
-      "open24Hours": true
-    },
-    {
-      "id": 4,
-      "name": "Regional Trauma Center",
-      "address": "321 Emergency Way, Northside",
-      "phone": "(555) 456-7890",
-      "distance": "3.5 miles",
-      "open24Hours": true
-    }
-  ],
+  "centers": [],
   "instructions": [
     "Call emergency services immediately if someone is in immediate danger",
     "Do not move injured persons unless they are in further danger",
