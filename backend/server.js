@@ -32,5 +32,5 @@ app.use('/api', medicalNewsRoutes)
 
 app.get('/api/health', (req, res) => res.json({ok:true}))
 
-const port = process.env.PORT || 4000
+const port = process.env.PORT || 10000;
 app.listen(port, ()=> console.log(`Backend listening on port ${port}`))
