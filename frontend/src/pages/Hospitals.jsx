@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
@@ -33,7 +33,18 @@ export default function Hospitals() {
   }
 
   const defaultCenter = [40.7128, -74.0060]
+  const [mapCenter, setMapCenter] = useState(defaultCenter)
   const defaultZoom = 12
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
+        err => console.warn('Location permission denied or error', err.message),
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')] flex flex-col relative">
@@ -69,11 +80,17 @@ export default function Hospitals() {
         {/* Map - Major Part */}
         <div className="flex-1 relative">
           <MapContainer
-            center={defaultCenter}
+            center={mapCenter}
             zoom={defaultZoom}
             className="w-full h-full"
             style={{ minHeight: '400px' }}
           >
+            {/* show user location when available */}
+            {mapCenter && (
+              <Marker position={mapCenter}>
+                <Popup>You are here</Popup>
+              </Marker>
+            )}
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

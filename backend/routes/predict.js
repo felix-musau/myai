@@ -13,7 +13,8 @@ router.post('/predict', authMiddleware, async (req, res) => {
     }
     
     // Call Python ML service
-    const response = await fetch('http://localhost:8000/predict', {
+    const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000'
+    const response = await fetch(`${mlUrl}/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ symptoms })

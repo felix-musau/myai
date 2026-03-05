@@ -10,6 +10,7 @@ import FAQ from './pages/FAQ'
 import LabResults from './pages/LabResults'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
+import MedicalNews from './pages/MedicalNews'
 
 // Auth Context
 export const AuthContext = createContext(null)
@@ -51,17 +52,15 @@ function Navbar() {
     }
   }
 
+  // core navigation links; all use same base style except emergency which is red
   const navLinks = [
     { href: '/home', label: 'Home' },
-    { href: '/hospitals', label: 'Hospitals' },
-    { href: '/history', label: 'History' },
-    { href: '/request-doctor', label: 'Request Doctor' },
-    { href: '/emergency', label: 'Emergency', emergency: true },
-    { href: '/success-stories', label: 'Success Stories' },
-    { href: '/faq', label: 'FAQ' },
-    { href: '/lab-results', label: 'Lab Results' },
-    { href: '/contact', label: 'Contact' },
-    { href: '/profile', label: 'Profile' },
+    { href: '/hospitals', label: 'Map' },
+    { href: '/medical-news', label: 'News' },
+    { href: '/success-stories', label: 'Reviews' },
+    { href: '/lab-results', label: 'Labs' },
+    { href: '/emergency', label: 'Alert', emergency: true },
+    { href: '/profile', label: 'Profile' }
   ]
 
   return (
@@ -75,10 +74,10 @@ function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className={`px-3 py-2 rounded-md transition ${
+              className={`px-3 py-2 rounded-md font-semibold text-white transition ${
                 link.emergency
-                  ? 'bg-red-500 hover:bg-red-600 font-semibold'
-                  : 'hover:bg-blue-700'
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >
               {link.label}
@@ -839,6 +838,7 @@ export default function App() {
           <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
           <Route path="/lab-results" element={<ProtectedRoute><LabResults /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/medical-news" element={<ProtectedRoute><MedicalNews /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
         </Routes>
       </div>

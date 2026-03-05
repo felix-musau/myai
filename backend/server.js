@@ -9,6 +9,7 @@ const consultationRoutes = require('./routes/consultations')
 const doctorRequestsRoutes = require('./routes/doctorRequests')
 const testimonialsRoutes = require('./routes/testimonials')
 const labResultsRoutes = require('./routes/labResults')
+const medicalNewsRoutes = require('./routes/medicalNews')
 
 const app = express()
 app.use(express.json())
@@ -26,6 +27,16 @@ app.use('/api', consultationRoutes)
 app.use('/api', doctorRequestsRoutes)
 app.use('/api', testimonialsRoutes)
 app.use('/api', labResultsRoutes)
+app.use('/api', medicalNewsRoutes)
+
+// if running in production we may want to serve the frontend build from the backend
+if (process.env.NODE_ENV === 'production') {
+  const _path = require('path')
+  app.use(express.static(_path.join(__dirname, '../frontend/dist')))
+  app.get('*', (req, res) => {
+    res.sendFile(_path.join(__dirname, '../frontend/dist/index.html'))
+  })
+}
 
 app.get('/api/health', (req, res) => res.json({ok:true}))
 

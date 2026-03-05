@@ -1,1 +1,20 @@
-{"consultations": []}
+{
+  "consultations": [
+    {
+      "id": 1772700784722,
+      "user_id": 1772113254408,
+      "username": "Alvin",
+      "name": "gee",
+      "gender": "male",
+      "age": 54,
+      "conditions": [],
+      "symptoms": [
+        "nausea",
+        "fatigue",
+        "weakness_in_limbs"
+      ],
+      "disease": "Cervical spondylosis",
+      "created_at": "2026-03-05T08:53:04.722Z"
+    }
+  ]
+}
