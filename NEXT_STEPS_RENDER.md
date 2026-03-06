@@ -55,9 +55,16 @@ This document assumes you will deploy the **backend** as one Web Service and the
    - **Build Command**: `npm install && npm run build`
    - **Publish Directory**: `dist`              
      *(because the root is already `frontend`, the output path is `frontend/dist` on disk)*
+   - **Environment (optional)**: add `REACT_APP_API_BASE` set to your backend URL, e.g. `https://my-backend.onrender.com` (this ensures `/api/...` requests reach the backend when the frontend is hosted on a different domain).
 4. (Optional) Environment vars only if your frontend reads them:
-   - `REACT_APP_API_BASE` or equivalent – set to the backend URL, e.g. `https://my-backend.onrender.com`.
+   - `REACT_APP_API_BASE` – **set to the backend URL** (e.g. `https://my-backend.onrender.com`). This value is used at build time to configure axios so API calls go to the correct origin. Without it, requests default to the frontend origin and will 404 once the app is hosted separately.
 5. Create the service and wait for the build. Record the frontend URL.
+
+> 🔁 **Rewrites for SPA routing**: under the static site’s **Settings → Redirects / Rewrites** add a rule:
+> ```
+> /*    /index.html    200
+> ```
+> This ensures that client‑side routes (e.g. `/home`, `/chat`) all return `index.html` so React Router can take over. Without it you'll see “Page not found” when clicking buttons after login.
 
 > ⚠️ **Common error**: if you leave **Root Directory** blank and set **Publish Directory** to `frontend/dist`, Render will look for `frontend/frontend/dist` and fail with "Publish directory frontend/dist does not exist". Make sure the publish path is relative to the root directory.
 

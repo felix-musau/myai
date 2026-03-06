@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+// allow overriding the backend URL in production via env var
+const API_BASE_URL = process.env.REACT_APP_API_BASE || '/api'
 
 // Create axios instance with default config
 const api = axios.create({
