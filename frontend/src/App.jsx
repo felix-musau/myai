@@ -2,6 +2,44 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
+// configure axios globally to use backend URL from Vite env
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE || '/api'
+
+// set up global error logging to catch runtime failures in production
+window.onerror = (msg, url, line, col, err) => {
+  console.error('Global error:', msg, url, line, col, err)
+}
+window.onunhandledrejection = (e) => {
+  console.error('Unhandled promise rejection:', e.reason)
+}
+
+// simple error boundary component to display crashes in UI
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+  componentDidCatch(error, info) {
+    console.error('ErrorBoundary caught:', error, info)
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded shadow-lg text-red-700">
+            <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
+            <pre className="whitespace-pre-wrap">{this.state.error.toString()}</pre>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 // Import new pages
 import RequestDoctor from './pages/RequestDoctor'
 import Emergency from './pages/Emergency'
@@ -825,6 +863,7 @@ export default function App() {
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')]">
         {user && <Navbar />}
+        <ErrorBoundary>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -843,6 +882,7 @@ export default function App() {
           <Route path="/medical-news" element={<ProtectedRoute><MedicalNews /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
         </Routes>
+        </ErrorBoundary>
       </div>
     </AuthContext.Provider>
   )

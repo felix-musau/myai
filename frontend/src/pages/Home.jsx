@@ -45,6 +45,7 @@ const proTips = [
 
 export default function Home() {
   const { user, logout } = useAuth()
+  console.log('Home component rendered user=', user)
   const navigate = useNavigate()
   
   // Chat state
