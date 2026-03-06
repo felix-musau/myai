@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 // configure axios globally to use backend URL from Vite env
