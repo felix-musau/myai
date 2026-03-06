@@ -802,7 +802,9 @@ export default function App() {
     try {
       const res = await axios.get('/api/auth/check', { withCredentials: true })
       if (res.data.authenticated) {
-        setUser(res.data.username)
+        // backend returns { authenticated:true, username, email }
+        // preserve the same user object shape created during login
+        setUser({ username: res.data.username, email: res.data.email })
       }
     } catch (err) {
       console.error('Auth check error:', err)
