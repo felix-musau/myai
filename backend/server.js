@@ -30,8 +30,9 @@ app.use('/api', labResultsRoutes)
 app.use('/api', medicalNewsRoutes)
 
 
-app.get('/api/health', (req, res) => res.json({ok:true}))
-
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
 const port = process.env.PORT || 10000;
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend listening on port ${port}`)
