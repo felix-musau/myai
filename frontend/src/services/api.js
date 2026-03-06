@@ -1,7 +1,8 @@
 import axios from 'axios'
 
-// allow overriding the backend URL in production via env var
-const API_BASE_URL = process.env.REACT_APP_API_BASE || '/api'
+// allow overriding the backend URL in production via Vite env var
+// Vite exposes variables prefixed with VITE_ via import.meta.env
+const API_BASE_URL = import.meta.env.VITE_API_BASE || '/api'
 
 // Create axios instance with default config
 const api = axios.create({

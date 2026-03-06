@@ -55,16 +55,16 @@ This document assumes you will deploy the **backend** as one Web Service and the
    - **Build Command**: `npm install && npm run build`
    - **Publish Directory**: `dist`              
      *(because the root is already `frontend`, the output path is `frontend/dist` on disk)*
-   - **Environment (optional)**: add `REACT_APP_API_BASE` set to your backend URL, e.g. `https://my-backend.onrender.com` (this ensures `/api/...` requests reach the backend when the frontend is hosted on a different domain).
+   - **Environment (optional)**: add `VITE_API_BASE` set to your backend URL, e.g. `https://my-backend.onrender.com` (this ensures `/api/...` requests reach the backend when the frontend is hosted on a different domain). Remember to trigger a rebuild after setting the variable.
 4. (Optional) Environment vars only if your frontend reads them:
-   - `REACT_APP_API_BASE` – **set to the backend URL** (e.g. `https://my-backend.onrender.com`). This value is used at build time to configure axios so API calls go to the correct origin. Without it, requests default to the frontend origin and will 404 once the app is hosted separately.
+   - `VITE_API_BASE` – **set to the backend URL** (e.g. `https://my-backend.onrender.com`). Vite only exposes variables prefixed with `VITE_`, so using `REACT_APP_` has no effect. This value is used at build time to configure axios so API calls go to the correct origin. Without it, requests default to the frontend origin and will 404 once the app is hosted separately.
 5. Create the service and wait for the build. Record the frontend URL.
 
 > 🔁 **Rewrites for SPA routing**: under the static site’s **Settings → Redirects / Rewrites** add a rule:
 > ```
 > /*    /index.html    200
 > ```
-> This ensures that client‑side routes (e.g. `/home`, `/chat`) all return `index.html` so React Router can take over. Without it you'll see “Page not found” when clicking buttons after login.
+> This ensures that client‑side routes (e.g. `/home`, `/chat`) all return `index.html` so React Router can take over. Without it you'll see “Page not found” when clicking buttons after login or when using the browser back/refresh. Using `Link` components for navigation (already implemented in the navbar) avoids full page reloads but the rewrite is still required for deep links and reloads.
 
 > ⚠️ **Common error**: if you leave **Root Directory** blank and set **Publish Directory** to `frontend/dist`, Render will look for `frontend/frontend/dist` and fail with "Publish directory frontend/dist does not exist". Make sure the publish path is relative to the root directory.
 

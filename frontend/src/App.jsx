@@ -67,13 +67,13 @@ function Navbar() {
     <nav className="bg-blue-600 p-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div>
-          <a href="/home" className="text-white text-xl font-bold">MyAI Healthcare</a>
+          <Link to="/home" className="text-white text-xl font-bold">MyAI Healthcare</Link>
         </div>
         <div className="hidden md:flex items-center space-x-1">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               className={`px-3 py-2 rounded-md font-semibold text-white transition ${
                 link.emergency
                   ? 'bg-red-500 hover:bg-red-600'
@@ -81,7 +81,7 @@ function Navbar() {
               }`}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           {user && (
             <span className="text-white px-3 py-2 hidden sm:inline-block">
@@ -117,9 +117,9 @@ function Navbar() {
         <div className="md:hidden pb-4">
           <div className="flex flex-col space-y-1">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-3 py-2 rounded-md transition ${
                   link.emergency
@@ -128,7 +128,7 @@ function Navbar() {
                 }`}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             {user && (
               <div className="px-3 py-2 text-white">
