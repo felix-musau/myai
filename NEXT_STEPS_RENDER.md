@@ -2,7 +2,9 @@
 
 This document assumes you will deploy the **backend** as one Web Service and the **frontend** as a separate Static Site on Render. Do not try to bundle them into a single service; follow the steps below exactly.
 
-1. **Push your code** – commit everything and push to the branch you intend to deploy (e.g. `main`). The repo must contain `backend` and `frontend` directories.
+1. **Push your code** – commit everything and push to the branch you intend to deploy (e.g. `main`). The repo must contain `backend` and `frontend` directories.  
+
+> 📌 **Important frontend build note**: `vite.config.js` should set `base: './'` (already done in the template) so that the generated HTML uses relative URLs. This ensures assets still load when you visit a client route like `/home` after deployment. Without it you’ll get a blank page because `/home/assets/...` returns 404.
 2. **Local sanity check** – run both parts locally and verify full functionality:
    ```bash
    # backend
