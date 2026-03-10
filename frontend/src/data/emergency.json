@@ -1,0 +1,82 @@
+{
+  "emergencyNumber": "999",
+  "kenyanEmergency": {
+    "police": "999",
+    "ambulance": "999",
+    "fire": "999",
+    "redCross": "1199",
+    "generalEmergency": ""
+  },
+  "instructions": [
+    "Stay calm and call for help",
+    "Apply first aid if trained",
+    "Move to a safe location if possible"
+  ],
+  "symptoms": [
+    {"id":1,"icon":"‼️","title":"Severe pain","description":"Pain that is unbearable or unrelieved"},
+    {"id":2,"icon":"‼️","title":"Chest pain","description":"Possible heart attack symptoms"},
+    {"id":3,"icon":"‼️","title":"Loss of consciousness","description":"Cannot be easily awakened"}
+  ],
+  "kenyanHospitals": [
+    {
+      "id": 1,
+      "name": "Kenyatta National Hospital",
+      "address": "Hospital Road, Nairobi",
+      "phone": "+254 20 2726300",
+      "type": "National Referral",
+      "open24Hours": true,
+      "lat": -1.3002,
+      "lng": 36.8078
+    },
+    {
+      "id": 2,
+      "name": "Moi Teaching and Referral Hospital",
+      "address": "Nandi Road, Eldoret",
+      "phone": "+254 53 2033141",
+      "type": "Regional Referral",
+      "open24Hours": true,
+      "lat": 0.5200,
+      "lng": 35.2697
+    },
+    {
+      "id": 3,
+      "name": "Nairobi Hospital",
+      "address": "Argwings Kodhek Road, Nairobi",
+      "phone": "+254 20 2845000",
+      "type": "Private",
+      "open24Hours": true,
+      "lat": -1.27545,
+      "lng": 36.81269
+    },
+    {
+      "id": 4,
+      "name": "Aga Khan University Hospital, Nairobi",
+      "address": "5th Parklands Avenue, Nairobi",
+      "phone": "+254 20 3662000",
+      "type": "Private",
+      "open24Hours": true,
+      "lat": -1.267,
+      "lng": 36.807
+    },
+    {
+      "id": 5,
+      "name": "Kenyatta University Teaching & Referral Hospital",
+      "address": "Kenyatta University, Kahawa",
+      "phone": "+254 20 8704100",
+      "type": "Teaching Hospital",
+      "open24Hours": true,
+      "lat": -1.1673,
+      "lng": 36.9316
+    },
+    {
+      "id": 6,
+      "name": "Mombasa Hospital",
+      "address": "Argyle Road, Mombasa",
+      "phone": "+254 41 2220000",
+      "type": "Private",
+      "open24Hours": true,
+      "lat": -4.0567,
+      "lng": 39.6389
+    }
+  ]
+}

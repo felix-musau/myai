@@ -1,0 +1,102 @@
+[
+  {
+    "category": "Chatbot Usage",
+    "questions": [
+      {
+        "id": 1,
+        "question": "How does the AI chatbot work?",
+        "answer": "Our AI chatbot uses advanced machine learning algorithms to analyze your symptoms and provide potential health insights. It asks questions about your symptoms, medical history, and other relevant factors to generate personalized recommendations."
+      },
+      {
+        "id": 2,
+        "question": "Can the chatbot diagnose my condition?",
+        "answer": "No, our chatbot provides informational insights and suggestions based on your symptoms. It is not a substitute for professional medical diagnosis. Always consult with a healthcare provider for accurate diagnosis and treatment."
+      },
+      {
+        "id": 3,
+        "question": "How accurate are the symptom predictions?",
+        "answer": "The system is trained on extensive medical data and provides predictions based on common symptom patterns. While it can be helpful for initial guidance, it should not be used as the sole basis for medical decisions."
+      }
+    ]
+  },
+  {
+    "category": "Medical Safety",
+    "questions": [
+      {
+        "id": 4,
+        "question": "Is it safe to rely on the AI recommendations?",
+        "answer": "Our AI provides general health information and should be used as a starting point for understanding your symptoms. For any serious or persistent symptoms, please seek professional medical attention immediately."
+      },
+      {
+        "id": 5,
+        "question": "What should I do in a medical emergency?",
+        "answer": "In case of a medical emergency, call your local emergency services immediately (911 in the US) or go to the nearest emergency room. Our platform has an Emergency page with quick access to emergency resources."
+      },
+      {
+        "id": 6,
+        "question": "Are the medical facts verified?",
+        "answer": "Yes, our health facts and information are sourced from reputable medical institutions and are regularly reviewed by healthcare professionals."
+      }
+    ]
+  },
+  {
+    "category": "Privacy & Data",
+    "questions": [
+      {
+        "id": 7,
+        "question": "How is my medical data protected?",
+        "answer": "We take data privacy seriously. Your health information is encrypted and stored securely. We comply with HIPAA regulations and never share your personal health data without your explicit consent."
+      },
+      {
+        "id": 8,
+        "question": "Can I delete my health history?",
+        "answer": "Yes, you can request to delete your health data at any time. Contact our support team or use the account settings to manage your data."
+      },
+      {
+        "id": 9,
+        "question": "Who can access my consultation history?",
+        "answer": "Only you can access your consultation history. Healthcare providers you explicitly share your information with may also access relevant portions with your permission."
+      }
+    ]
+  },
+  {
+    "category": "Appointments",
+    "questions": [
+      {
+        "id": 10,
+        "question": "How do I request a doctor consultation?",
+        "answer": "Use the 'Request Doctor' page to submit a consultation request. Fill in your symptoms, preferred date/time, and urgency level. Our team will review and contact you to schedule an appointment."
+      },
+      {
+        "id": 11,
+        "question": "How long does it take to get a response?",
+        "answer": "Response times vary based on urgency. High urgency requests are prioritized and typically responded to within hours. Regular requests are addressed within 24-48 hours."
+      },
+      {
+        "id": 12,
+        "question": "Can I choose my preferred doctor?",
+        "answer": "Yes, you can select a specialty and preferred doctor when requesting a consultation. We'll do our best to match you with your choice based on availability."
+      }
+    ]
+  },
+  {
+    "category": "Lab Results",
+    "questions": [
+      {
+        "id": 13,
+        "question": "How do I upload my lab results?",
+        "answer": "Go to the Lab Results page and use the file upload feature or enter your test values manually. Our system will analyze the results and provide interpretation."
+      },
+      {
+        "id": 14,
+        "question": "Is the lab analysis accurate?",
+        "answer": "Our lab analysis provides general interpretation based on standard medical reference ranges. It should not replace professional medical advice. Always consult with your doctor for proper interpretation of your lab results."
+      },
+      {
+        "id": 15,
+        "question": "What types of lab results can I analyze?",
+        "answer": "Currently, we support common blood test results including CBC, metabolic panel, lipid panel, and more. We're continuously adding support for additional test types."
+      }
+    ]
+  }
+]
