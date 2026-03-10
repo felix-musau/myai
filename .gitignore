@@ -9,6 +9,13 @@ __pycache__/
 .env
 .env.local
 .env.*.local
+backend/.env
+backend/.env.local
+backend/.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
 
 # Database
 *.db
