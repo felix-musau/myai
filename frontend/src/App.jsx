@@ -303,6 +303,7 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    console.log('Register form submitted', form)
     
     // Validation
     if (form.password !== form.confirmPassword) {
@@ -318,11 +319,13 @@ function RegisterPage() {
     setLoading(true)
     
     try {
+      console.log('Sending registration request...')
       const res = await axios.post('/auth/register', {
         username: form.username,
         email: form.email,
         password: form.password
-      })
+      }, { withCredentials: true })
+      console.log('Registration response:', res.data)
       if(res.data.username){
         login({ username: res.data.username, email: res.data.email })
         navigate('/home')
@@ -331,6 +334,7 @@ function RegisterPage() {
         setTimeout(() => navigate('/login'), 3000)
       }
     } catch (err) {
+      console.error('Registration error:', err)
       setError(err.response?.data?.error || 'Registration failed')
     } finally {
       setLoading(false)
