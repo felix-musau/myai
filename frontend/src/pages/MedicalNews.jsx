@@ -17,6 +17,14 @@ export default function MedicalNews() {
           const text = await res.text()
           throw new Error(text || 'network error')
         }
+        const ct = res.headers.get('content-type') || ''
+        if (!ct.includes('application/json')) {
+          // likely hit frontend fallback or a proxy issue
+          const body = await res.text()
+          throw new Error('Expected JSON but got HTML or other response: ' +
+            (body.trim().substring(0, 100))
+          )
+        }
         const data = await res.json()
         setArticles(data.articles || [])
       } catch (err) {

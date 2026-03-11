@@ -150,6 +150,11 @@ export default function Home() {
         const text = await res.text()
         throw new Error(text || `HTTP ${res.status}`)
       }
+      const ct = res.headers.get('content-type') || ''
+      if (!ct.includes('application/json')) {
+        const bodyText = await res.text()
+        throw new Error('Bad chat response: ' + bodyText.slice(0, 100))
+      }
       const data = await res.json()
       setMessages(prev => [...prev, { sender: 'bot', text: data.reply }])
     } catch (err) {
