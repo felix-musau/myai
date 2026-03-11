@@ -204,4 +204,45 @@ router.post('/reset', authMiddleware, (req, res) => {
   }
 });
 
+// GET /api/fact - return a random health fact
+const bodyFacts = [
+  "Your heart beats about 100,000 times per day",
+  "You have about 37.2 trillion cells in your body",
+  "Your bones are stronger than steel",
+  "Your nose can remember 50,000 different scents",
+  "Your brain uses 20% of your body's energy",
+  "Your liver has over 500 functions",
+  "Your lungs have a surface area of about 70 square meters",
+  "Your skin is the largest organ",
+  "Your stomach gets a new lining every 3-4 days",
+  "You lose about 4kg of skin cells each year",
+  "Your brain is 73% water",
+  "Human DNA could stretch from Earth to the sun and back"
+];
+
+const proTips = [
+  "Drink at least 8 glasses of water daily to keep your body hydrated and functioning properly.",
+  "Get 7-9 hours of sleep each night to allow your body to repair and recharge.",
+  "Wash your hands frequently for at least 20 seconds to prevent the spread of germs.",
+  "Apply ice to a sprain for 15-20 minutes every hour to reduce swelling.",
+  "Take breaks every 30 minutes when working at a computer to prevent eye strain.",
+  "Chew your food slowly to aid digestion and prevent overeating.",
+  "Keep a first aid kit at home with bandages, antiseptic, and pain relievers.",
+  "Check your posture while sitting - keep your back straight and shoulders relaxed.",
+  "Replace your toothbrush every 3 months or after illness to maintain oral hygiene.",
+  "Apply sunscreen with SPF 30+ daily to protect your skin from UV damage."
+];
+
+router.get('/fact', (req, res) => {
+  try {
+    const isTip = Math.random() > 0.5;
+    const facts = isTip ? proTips : bodyFacts;
+    const fact = facts[Math.floor(Math.random() * facts.length)];
+    res.json({ fact, isTip });
+  } catch (err) {
+    console.error('Fact error:', err);
+    res.status(500).json({ error: 'Failed to fetch fact' });
+  }
+});
+
 module.exports = router;

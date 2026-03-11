@@ -102,6 +102,10 @@ export default function Home() {
   const loadFact = async () => {
     try {
       const res = await fetch('/api/fact')
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `HTTP ${res.status}`)
+      }
       const data = await res.json()
       setIsProTip(!!data.isTip)
       setFactVisible(false)
@@ -110,6 +114,7 @@ export default function Home() {
         setFactVisible(true)
       }, 300)
     } catch (err) {
+      console.error('Error loading fact:', err)
       // Use the ref to get the current index instead of stale state
       const currentIndex = factIndexRef.current
       const isTip = currentIndex % 2 === 1
@@ -141,14 +146,15 @@ export default function Home() {
         navigate('/login', { replace: true })
         return
       }
-      const data = await res.json()
       if (!res.ok) {
-        // show server provided error
-        throw new Error(data.error || 'Chat request failed')
+        const text = await res.text()
+        throw new Error(text || `HTTP ${res.status}`)
       }
+      const data = await res.json()
       setMessages(prev => [...prev, { sender: 'bot', text: data.reply }])
     } catch (err) {
-      setMessages(prev => [...prev, { sender: 'bot', text: `⚠️ ${err.message}` }])
+      console.error('Chat error:', err)
+      setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, something went wrong. Please try again.' }])
     } finally {
       setLoading(false)
     }
