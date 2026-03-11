@@ -16,10 +16,15 @@ const dbFile = path.join(__dirname, '..', 'db', 'users.json');
 const adapter = new JSONFile(dbFile);
 const db = new Low(adapter);
 
+let dbLoaded = false;
+
 async function ensureDB() {
-  await db.read();
-  db.data = db.data || { users: [] };
-  await db.write();
+  if (!dbLoaded) {
+    await db.read();
+    db.data = db.data || { users: [] };
+    dbLoaded = true;
+    // only write when we actually modify data (e.g. registration)
+  }
 }
 
 // make sure JWT secret exists before signing/verifying
@@ -47,7 +52,9 @@ async function register(req, res) {
       console.log('⚠️ Registration blocked, user exists:', existsUser);
       return res.status(400).json({ error: 'User exists' });
     }
-    const hashPassword = await bcrypt.hash(password, 10);
+    // choose smaller salt rounds in production for speed on low-tier hosts
+    const rounds = process.env.NODE_ENV === 'production' ? 8 : 10;
+    const hashPassword = await bcrypt.hash(password, rounds);
     const userObj = { id: Date.now(), username, email, password_hash: hashPassword, is_verified: true };
     db.data.users.push(userObj);
     await db.write();

@@ -84,9 +84,23 @@ app.use('/api', labResultsRoutes)
 app.use('/api', medicalNewsRoutes)
 
 
+// simple health check
 app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
+
+// route used by contact form frontend; we don't need authentication here
+app.post('/send-message', (req, res) => {
+  const { name, email, message } = req.body || {};
+  // log the message so it can be reviewed on the server side
+  console.log(`📩 Contact form submission:
+  Name: ${name}
+  Email: ${email}
+  Message: ${message}`);
+  // in a real app you'd send an email or write to a database; for now just acknowledge
+  res.json({ success: true });
+});
+
 const port = process.env.PORT || 10000;
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend listening on port ${port}`)

@@ -22,7 +22,8 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 export default function MapView(){
-  const [center, setCenter] = useState(null) // null until we get permission
+  // we will center on user location if available; otherwise fall back to first hospital
+  const [center, setCenter] = useState(null)
   const [nearby, setNearby] = useState([])
 
   useEffect(() => {
@@ -34,9 +35,20 @@ export default function MapView(){
         },
         (err) => {
           console.warn('Geolocation error:', err.message)
+          // fallback: use the first hospital from our dataset
+          if (hospitalsData.kenyanHospitals && hospitalsData.kenyanHospitals.length > 0) {
+            const h = hospitalsData.kenyanHospitals[0]
+            setCenter([h.lat, h.lng])
+          }
         },
         { enableHighAccuracy: true, timeout: 10000 }
       )
+    } else {
+      // no geolocation support
+      if (hospitalsData.kenyanHospitals && hospitalsData.kenyanHospitals.length > 0) {
+        const h = hospitalsData.kenyanHospitals[0]
+        setCenter([h.lat, h.lng])
+      }
     }
   }, [])
 
@@ -51,31 +63,40 @@ export default function MapView(){
         }))
         .sort((a, b) => a.distance - b.distance)
       setNearby(sorted)
+      if (sorted.length && sorted[0].distance > 500) {
+        // incorrect location, fallback to first hospital
+        const h = hospitalsData.kenyanHospitals[0]
+        setCenter([h.lat, h.lng])
+      }
     }
   }, [center])
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      {/* sidebar */}
+      {/* sidebar (1/3 width) */}
       <div
         style={{
-          width: '250px',
+          width: '33.33%',
+          minWidth: '200px',
           borderRight: '1px solid #ccc',
           padding: '8px',
           overflowY: 'auto',
         }}
+        onWheel={e => e.stopPropagation()} // keep scroll inside sidebar
       >
         <h3>Nearby Hospitals</h3>
         {!center && <p>Waiting for location permission...</p>}
         {center && nearby.length === 0 && <p>No hospitals found</p>}
         {center &&
           nearby.map((h) => (
-            <div key={h.id} style={{ marginBottom: '8px' }}>
-              <strong>{h.name}</strong>
+            <div key={h.id} style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #eee' }}>
+              <strong>{h.name}</strong> {h.open24Hours ? <span style={{color:'green'}}>(Open 24h)</span> : <span style={{color:'red'}}>(Closed)</span>}
               <br />
               {h.address}
               <br />
               {h.phone}
+              <br />
+              {h.type && <em>{h.type}</em>}
               <br />
               Distance: {h.distance.toFixed(2)} km
             </div>
@@ -85,7 +106,11 @@ export default function MapView(){
       <MapContainer
         center={center || [0, 0]}
         zoom={center ? 13 : 2}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '66.66%' }}
+        // prevent wheel from bubbling up to parent containers
+        whenCreated={map => {
+          map.getContainer().addEventListener('wheel', e => e.stopPropagation(), { passive: true })
+        }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'

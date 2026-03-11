@@ -29,7 +29,18 @@ const fallbackArticles = [
 
 // GET /api/medical-news
 // returns an array of articles from external news API
+let newsCache = {
+  timestamp: 0,
+  articles: []
+};
+
 router.get('/medical-news', async (req, res) => {
+  // if we fetched recently (10 mins), return cached
+  const now = Date.now();
+  if (now - newsCache.timestamp < 10 * 60 * 1000 && newsCache.articles.length) {
+    return res.json({ articles: newsCache.articles });
+  }
+
   try {
     const apiKey = process.env.NEWS_API_KEY
     if (!apiKey) {
@@ -37,7 +48,7 @@ router.get('/medical-news', async (req, res) => {
       return res.json({ articles: fallbackArticles })
     }
 
-    // fetch health-related headlines
+    // fetch health-related headlines with timeout
     const response = await axios.get('https://newsapi.org/v2/top-headlines', {
       params: {
         category: 'health',
@@ -45,7 +56,7 @@ router.get('/medical-news', async (req, res) => {
         pageSize: 20,
         apiKey
       },
-      timeout: 5000
+      timeout: 7000
     })
 
     const articles = (response.data.articles || []).map(a => ({
@@ -58,13 +69,18 @@ router.get('/medical-news', async (req, res) => {
 
     if (!articles || articles.length === 0) {
       console.warn('No articles received from API, using fallback')
-      return res.json({ articles: fallbackArticles })
+      res.json({ articles: fallbackArticles })
+    } else {
+      newsCache = { timestamp: now, articles };
+      res.json({ articles })
     }
-
-    res.json({ articles })
   } catch (err) {
     console.error('News fetch error:', err.response?.status, err.response?.data?.message || err.message)
-    // Return fallback articles instead of error
+    // serve cached if available
+    if (newsCache.articles.length) {
+      return res.json({ articles: newsCache.articles })
+    }
+    // else fallback
     res.json({ articles: fallbackArticles })
   }
 })

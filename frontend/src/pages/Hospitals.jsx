@@ -4,6 +4,7 @@ import { useAuth } from '../App'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import hospitalsData from '../data/emergency.json'
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl
@@ -13,35 +14,77 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
-// this view only shows the user's current location on the map; available hospitals list is managed separately
+// distance helper
+function getDistance(lat1, lon1, lat2, lon2) {
+  const toRad = (deg) => (deg * Math.PI) / 180
+  const R = 6371
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lon1)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
 
 export default function Hospitals() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  // location state only
-  const [locationRequested, setLocationRequested] = useState(false);
+  // for new layout we compute user center and nearby hospitals
+  const [center, setCenter] = useState(null)
+  const [nearby, setNearby] = useState([])
 
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
   }
 
-  // start with null until we have geolocation; map will not render until we set a real center
-  const [mapCenter, setMapCenter] = useState(null)
   const defaultZoom = 13
 
+  // obtain location with fallback
   useEffect(() => {
-    if (locationRequested && navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => {
-          const userLoc = [pos.coords.latitude, pos.coords.longitude];
-          setMapCenter(userLoc);
+        (pos) => {
+          setCenter([pos.coords.latitude, pos.coords.longitude])
         },
-        err => console.warn('Location permission denied or error', err.message),
+        (err) => {
+          console.warn('Geolocation error:', err.message)
+          if (hospitalsData.kenyanHospitals && hospitalsData.kenyanHospitals.length > 0) {
+            const h = hospitalsData.kenyanHospitals[0]
+            setCenter([h.lat, h.lng])
+          }
+        },
         { enableHighAccuracy: true, timeout: 10000 }
       )
+    } else {
+      if (hospitalsData.kenyanHospitals && hospitalsData.kenyanHospitals.length > 0) {
+        const h = hospitalsData.kenyanHospitals[0]
+        setCenter([h.lat, h.lng])
+      }
     }
-  }, [locationRequested])
+  }, [])
+
+  // compute nearby whenever center updates
+  useEffect(() => {
+    if (center) {
+      const [lat, lng] = center
+      const sorted = hospitalsData.kenyanHospitals
+        .map((h) => ({ ...h, distance: getDistance(lat, lng, h.lat, h.lng) }))
+        .sort((a, b) => a.distance - b.distance)
+      setNearby(sorted)
+      // if the closest hospital is extremely far (e.g. >500km), location is probably wrong
+      if (sorted.length && sorted[0].distance > 500) {
+        console.warn('Location seems outside expected area, using default hospital instead')
+        const h = hospitalsData.kenyanHospitals[0]
+        setCenter([h.lat, h.lng])
+      }
+    }
+  }, [center])
+
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')] flex flex-col relative">
@@ -71,35 +114,62 @@ export default function Hospitals() {
         </div>
       </div>
 
-      {/* Map or consent flow */}
-      <div className="flex-1">
-        {!locationRequested ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <p className="text-xl text-gray-700">This page needs your location to show nearby hospitals.</p>
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              onClick={() => setLocationRequested(true)}
-            >Allow location access</button>
-          </div>
-        ) : mapCenter ? (
-          <MapContainer
-            center={mapCenter}
-            zoom={defaultZoom}
-            className="w-full h-full"
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={mapCenter}>
-              <Popup>Your current location</Popup>
-            </Marker>
-          </MapContainer>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-600">Determining your location…</p>
-          </div>
-        )}
+      {/* Main content - sidebar + map */}
+      <div className="flex-1 flex" style={{ height: 'calc(100vh - 112px)' }}>
+        {/* sidebar 1/3 */}
+        <div className="w-1/3 border-r border-gray-300 p-4 overflow-y-auto" onWheel={e=>e.stopPropagation()}>
+          <h2 className="text-lg font-semibold mb-3">Nearby Hospitals</h2>
+          {!center && <p>Waiting for location permission...</p>}
+          {center && nearby.length === 0 && <p>No hospitals found</p>}
+          {center &&
+            nearby.map((h) => (
+              <div key={h.id} className="mb-4 pb-2 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <strong>{h.name}</strong>
+                  {h.open24Hours ? (
+                    <span className="text-green-600 text-sm">Open 24h</span>
+                  ) : (
+                    <span className="text-red-600 text-sm">Closed</span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">{h.type || ''}</div>
+                <div className="text-sm">{h.address}</div>
+                <div className="text-sm">{h.phone}</div>
+                <div className="text-xs text-gray-500">
+                  {h.distance ? `${h.distance.toFixed(2)} km` : ''}
+                </div>
+              </div>
+            ))}
+        </div>
+
+        {/* map 2/3 */}
+        <div className="w-2/3">
+          {center ? (
+            <MapContainer center={center} zoom={defaultZoom} className="w-full h-full"
+              whenCreated={map=>{map.getContainer().addEventListener('wheel', e=>e.stopPropagation(), {passive:true})}}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={center}>
+                <Popup>Your location</Popup>
+              </Marker>
+              {nearby.map((h) => (
+                <Marker key={h.id} position={[h.lat, h.lng]}>
+                  <Popup>
+                    {h.name}
+                    <br />
+                    {h.phone}
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-600">Loading map…</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   </div>

@@ -4,6 +4,7 @@ import axios from 'axios'
 
 // configure axios globally to use backend URL from Vite env
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE || '/api'  // use /api base; other calls omit the prefix
+axios.defaults.timeout = 10000  // network requests time out after 10s to avoid hanging
 
 // set up global error logging to catch runtime failures in production
 window.onerror = (msg, url, line, col, err) => {
@@ -223,7 +224,11 @@ function LoginPage() {
       login({ username: res.data.username, email: res.data.email })
       navigate('/home')
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed')
+      setError(
+        err.code === 'ECONNABORTED'
+          ? 'Login took too long; please try again.'
+          : err.response?.data?.error || 'Login failed'
+      )
     } finally {
       setLoading(false)
     }
@@ -350,7 +355,11 @@ function RegisterPage() {
       }
     } catch (err) {
       console.error('Registration error:', err)
-      setError(err.response?.data?.error || 'Registration failed. Please try again.')
+      setError(
+        err.code === 'ECONNABORTED'
+          ? 'Registration took too long; please try again.'
+          : err.response?.data?.error || 'Registration failed. Please try again.'
+      )
     } finally {
       setLoading(false)
     }

@@ -61,6 +61,7 @@ Remember: Short responses, ask questions, then suggest!`;
         Authorization: `Bearer ${GROQ_KEY}`,
         'Content-Type': 'application/json'
       },
+      timeout: 15000, // 15 second timeout
       validateStatus: () => true
     });
     return resp;

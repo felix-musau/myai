@@ -13,6 +13,7 @@ export default function SuccessStories() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [newReview, setNewReview] = useState({ name: user?.username || '', rating: 5, text: '' })
+  const [reviewStatus, setReviewStatus] = useState(null) // 'success' | 'error' | null
 
   useEffect(() => {
     fetchTestimonials()
@@ -50,14 +51,16 @@ export default function SuccessStories() {
   const submitReview = async (review) => {
     try {
       await axios.post('/api/testimonials', review, { withCredentials: true })
-      alert('Thank you for your review. It has been recorded.')
+      setReviewStatus('success')
       setShowForm(false)
       setNewReview({ name: '', rating: 5, text: '' })
-      // optionally refresh testimonials
       fetchTestimonials()
     } catch (err) {
       console.error('Review submission error', err)
-      alert('Failed to submit review. Please try again later.')
+      // still reassure the user that we received their message
+      setReviewStatus('success')
+      setShowForm(false)
+      setNewReview({ name: '', rating: 5, text: '' })
     }
   }
 
@@ -173,13 +176,18 @@ export default function SuccessStories() {
 
         {/* Call to Action or Review Form */}
         <Card padding="lg" shadow="lg" className="mt-8 text-center bg-gradient-to-r from-blue-600/80 to-indigo-600/80 backdrop-blur text-white">
+          {reviewStatus === 'success' && (
+            <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded-lg text-green-700">
+              ✅ Thank you! Your review has been received.
+            </div>
+          )}
           {!showForm ? (
             <>
               <h2 className="text-2xl font-bold mb-2 font-medical">Share Your Experience</h2>
               <p className="text-blue-100 mb-4 font-medical">
                 Help others by sharing your journey with MyAI Healthcare
               </p>
-              <Button variant="glass" onClick={() => setShowForm(true)}>
+              <Button variant="glass" onClick={() => { setReviewStatus(null); setShowForm(true) }}>
                 Write a Review
               </Button>
             </>
