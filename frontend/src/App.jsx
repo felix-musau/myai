@@ -292,7 +292,7 @@ function LoginPage() {
 
 // Register Page
 function RegisterPage() {
-  const [form, setForm] = useState({ username: '', email: '', password: '' })
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -303,10 +303,26 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    
+    // Validation
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+    
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+    
     setLoading(true)
     
     try {
-      const res = await axios.post('/auth/register', form)
+      const res = await axios.post('/auth/register', {
+        username: form.username,
+        email: form.email,
+        password: form.password
+      })
       if(res.data.username){
         login({ username: res.data.username, email: res.data.email })
         navigate('/home')
@@ -365,7 +381,7 @@ function RegisterPage() {
               required
             />
           </div>
-          <div>
+<div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
@@ -376,6 +392,18 @@ function RegisterPage() {
               required
             />
             <p className="text-xs text-gray-500 mt-1">Must contain uppercase, lowercase, number & special char</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              placeholder="Confirm your password"
+              value={form.confirmPassword}
+              onChange={e => setForm({...form, confirmPassword: e.target.value})}
+              required
+            />
           </div>
           <button
             type="submit"
