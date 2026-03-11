@@ -279,10 +279,10 @@ function LoginPage() {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Don't have an account?{' '}
-            <a href="/register" className="text-blue-600 hover:underline font-semibold">Register</a>
+            <Link to="/register" className="text-blue-600 hover:underline font-semibold">Register</Link>
           </p>
           <p className="text-gray-600 mt-2">
-            <a href="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</a>
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>
           </p>
         </div>
       </div>
@@ -306,6 +306,21 @@ function RegisterPage() {
     console.log('Register form submitted', form)
     
     // Validation
+    if (!form.username || form.username.trim() === '') {
+      setError('Username is required')
+      return
+    }
+    
+    if (!form.email || form.email.trim() === '') {
+      setError('Email is required')
+      return
+    }
+    
+    if (!form.password || form.password === '') {
+      setError('Password is required')
+      return
+    }
+    
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match')
       return
@@ -335,7 +350,7 @@ function RegisterPage() {
       }
     } catch (err) {
       console.error('Registration error:', err)
-      setError(err.response?.data?.error || 'Registration failed')
+      setError(err.response?.data?.error || 'Registration failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -372,6 +387,8 @@ function RegisterPage() {
               value={form.username}
               onChange={e => setForm({...form, username: e.target.value})}
               required
+              minLength={3}
+              disabled={loading}
             />
           </div>
           <div>
@@ -383,9 +400,10 @@ function RegisterPage() {
               value={form.email}
               onChange={e => setForm({...form, email: e.target.value})}
               required
+              disabled={loading}
             />
           </div>
-<div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
@@ -394,10 +412,10 @@ function RegisterPage() {
               value={form.password}
               onChange={e => setForm({...form, password: e.target.value})}
               required
+              minLength={8}
+              disabled={loading}
             />
-            <p className="text-xs text-gray-500 mt-1">Must contain uppercase, lowercase, number & special char</p>
           </div>
-          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
@@ -407,12 +425,14 @@ function RegisterPage() {
               value={form.confirmPassword}
               onChange={e => setForm({...form, confirmPassword: e.target.value})}
               required
+              minLength={8}
+              disabled={loading}
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
@@ -421,7 +441,7 @@ function RegisterPage() {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Already have an account?{' '}
-            <a href="/login" className="text-blue-600 hover:underline font-semibold">Sign In</a>
+            <Link to="/login" className="text-blue-600 hover:underline font-semibold">Sign In</Link>
           </p>
         </div>
       </div>
