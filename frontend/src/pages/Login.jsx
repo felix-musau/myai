@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import api from '../services/api'
 
 export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' })
@@ -15,23 +16,12 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form)
-      })
-      
-      const data = await res.json()
-      
-      if (!res.ok) {
-        setError(data.error || 'Login failed')
-      } else {
-        login(data.username || form.username)
-        navigate('/home')
-      }
+      const res = await api.post('/auth/login', form)
+      const data = res.data
+      login(data.username || form.username)
+      navigate('/home')
     } catch (err) {
-      setError('Connection error. Please try again.')
+      setError(err.response?.data?.error || 'Login failed')
     } finally {
       setLoading(false)
     }

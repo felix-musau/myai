@@ -21,7 +21,6 @@ frontend/.env.*.local
 *.db
 *.sqlite*
 chatbot.db
-backend/db/users.json
 backend/db/consultations.json
 backend/db/
 

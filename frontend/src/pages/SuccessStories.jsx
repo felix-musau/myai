@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 import { AuthContext } from '../App'
 import Card from '../components/ui/Card'
 import StarRating from '../components/ui/StarRating'
@@ -28,7 +28,7 @@ export default function SuccessStories() {
   const fetchTestimonials = async () => {
     try {
       // Try to fetch from API
-      const response = await axios.get('/api/testimonials', { withCredentials: true })
+      const response = await api.get('/testimonials')
       if (response.data.success) {
         setTestimonials(response.data.testimonials)
         setSummary(response.data.summary)
@@ -50,7 +50,7 @@ export default function SuccessStories() {
   // handler to submit a new review from form
   const submitReview = async (review) => {
     try {
-      await axios.post('/api/testimonials', review, { withCredentials: true })
+      await api.post('/testimonials', review)
       setReviewStatus('success')
       setShowForm(false)
       setNewReview({ name: '', rating: 5, text: '' })

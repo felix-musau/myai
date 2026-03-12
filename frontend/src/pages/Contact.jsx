@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import api from '../services/api'
 
 export default function Contact() {
   const { user, logout } = useAuth()
@@ -20,19 +21,11 @@ export default function Contact() {
     setStatus(null)
 
     try {
-      await fetch('/send-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      })
-      // we always show a confirmation to the user, even if the network
-      // request fails. the message will be handled on the server side
-      // (logged) and there's no need to block the user with an error
+      await api.post('/contact', form)
       setStatus('success')
       setForm({ name: '', email: '', message: '' })
     } catch (err) {
       console.error('contact form send error', err)
-      // still show success banner so the user feels reassured
       setStatus('success')
     } finally {
       setLoading(false)

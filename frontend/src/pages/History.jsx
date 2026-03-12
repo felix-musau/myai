@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import api from '../services/api'
 
 export default function History() {
   const { user, logout } = useAuth()
@@ -15,11 +16,11 @@ export default function History() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/history')
-      if (res.ok) {
-        const text = await res.text()
-        // Parse the HTML response to extract consultation data
-        // For now, we'll show a message
+      try {
+        const res = await api.get('/consultations')
+        setConsultations(res.data.consultations || [])
+      } catch (err) {
+        // fall back to empty
         setConsultations([])
       }
     } catch (err) {

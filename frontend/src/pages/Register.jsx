@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import api from '../services/api'
 
 export default function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
@@ -30,30 +31,18 @@ export default function Register() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          password: form.password
-        })
+      const res = await api.post('/auth/register', {
+        username: form.username,
+        email: form.email,
+        password: form.password
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Registration failed')
-      } else {
-        setSuccess(true)
-        login({ username: form.username, email: form.email })
-        setMessage(data.message)
-        // after showing success message, go to home since we auto-logged in
-        setTimeout(() => navigate('/home'), 2000)
-      }
+      const data = res.data
+      setSuccess(true)
+      login({ username: form.username, email: form.email })
+      setMessage(data.message)
+      setTimeout(() => navigate('/home'), 2000)
     } catch (err) {
-      setError('Connection error. Please try again.')
+      setError(err.response?.data?.error || 'Registration failed')
     } finally {
       setLoading(false)
     }

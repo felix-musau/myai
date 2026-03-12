@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../App'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import api from '../services/api'
 
 export default function MedicalNews() {
   const { user } = useAuth()
@@ -12,23 +13,8 @@ export default function MedicalNews() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const res = await fetch('/api/medical-news')
-        if (!res.ok) {
-          const text = await res.text()
-          const msg = text || `HTTP ${res.status}`
-          console.error('News request failed', res.url, res.status, msg)
-          throw new Error(msg)
-        }
-        const ct = res.headers.get('content-type') || ''
-        if (!ct.includes('application/json')) {
-          // likely hit frontend fallback or a proxy issue
-          const body = await res.text()
-          console.error('News returned non-JSON', res.url, body.slice(0, 200))
-          throw new Error('Expected JSON but got HTML or other response: ' +
-            (body.trim().substring(0, 100))
-          )
-        }
-        const data = await res.json()
+        const res = await api.get('/medical-news')
+        const data = res.data
         setArticles(data.articles || [])
       } catch (err) {
         console.error('Failed fetching news:', err)

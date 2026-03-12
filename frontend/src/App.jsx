@@ -1,13 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
-import axios from 'axios'
+import api from './services/api'
 
-// configure axios globally to use backend URL from Vite env
-// prefer explicit env var; if missing assume backend lives on same origin
-const defaultBase = import.meta.env.VITE_API_BASE || (window.location.origin + '/api')
-axios.defaults.baseURL = defaultBase  // use /api base; other calls omit the prefix
-console.log('Axios baseURL set to', axios.defaults.baseURL)
-axios.defaults.timeout = 10000  // network requests time out after 10s to avoid hanging
 
 // set up global error logging to catch runtime failures in production
 window.onerror = (msg, url, line, col, err) => {
@@ -96,7 +90,7 @@ function Navbar() {
     })
 
     try {
-      await axios.post('/auth/logout', {}, { withCredentials: true })
+      await api.post('/auth/logout', {}, { withCredentials: true })
       
 // Replace current history so can't go back after logout
       
@@ -222,7 +216,7 @@ function LoginPage() {
     setLoading(true)
     
     try {
-      const res = await axios.post('/auth/login', form, { withCredentials: true })
+      const res = await api.post('/auth/login', form)
       // store user info object
       login({ username: res.data.username, email: res.data.email })
       navigate('/home')
@@ -343,7 +337,7 @@ function RegisterPage() {
     
     try {
       console.log('Sending registration request...')
-      const res = await axios.post('/auth/register', {
+      const res = await api.post('/auth/register', {
         username: form.username,
         email: form.email,
         password: form.password
@@ -478,7 +472,7 @@ function ForgotPasswordPage() {
     setLoading(true)
     
     try {
-      const res = await axios.post('/auth/forgot-password', { email })
+      const res = await api.post('/auth/forgot-password', { email })
       setSuccess(res.data.message)
       setTimeout(() => navigate('/login'), 3000)
     } catch (err) {
@@ -547,7 +541,7 @@ function ResetPasswordPage() {
     }
     setLoading(true)
     try {
-      const res = await axios.post('/auth/reset-password', { token, password })
+      const res = await api.post('/auth/reset-password', { token, password })
       setSuccess(res.data.message)
       setTimeout(() => navigate('/login'), 3000)
     } catch (err) {
@@ -621,7 +615,7 @@ function HomePage() {
   
   async function loadFact() {
     try {
-      const res = await axios.get('/fact')
+      const res = await api.get('/fact')
       setFact(res.data.fact)
     } catch (err) {
       console.error('Error loading fact:', err)
@@ -638,7 +632,7 @@ function HomePage() {
     setLoading(true)
     
     try {
-      const res = await axios.post('/chat', { message: userMsg })
+      const res = await api.post('/chat', { message: userMsg })
       setMessages(prev => [...prev, { role: 'bot', content: res.data.reply }])
     } catch (err) {
       setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, something went wrong.' }])
@@ -649,7 +643,7 @@ function HomePage() {
   
   async function resetChat() {
     try {
-      await axios.get('/reset')
+      await api.get('/reset')
       setMessages([])
     } catch (err) {
       console.error('Reset error:', err)
@@ -758,7 +752,7 @@ function HistoryPage() {
   
   async function loadHistory() {
     try {
-      const res = await axios.get('/api/consultations')
+      const res = await api.get('/consultations')
       setConsultations(res.data.consultations || [])
     } catch (err) {
       console.error('Error loading history:', err)
@@ -811,7 +805,7 @@ function ContactPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     try {
-      await axios.post('/send-message', form)
+      await api.post('/contact', form)
       setSuccess(true)
       setForm({ name: '', email: '', message: '' })
     } catch (err) {
@@ -898,7 +892,7 @@ export default function App() {
   
   async function checkAuth() {
     try {
-      const res = await axios.get('/auth/check', { withCredentials: true })
+      const res = await api.get('/auth/check')
       if (res.data.authenticated) {
         // backend returns { authenticated:true, username, email }
         // preserve the same user object shape created during login
@@ -918,7 +912,7 @@ export default function App() {
   async function logout() {
     try {
       // inform server to invalidate token and clear cookie
-      await axios.post('/auth/logout', {}, {
+      await api.post('/auth/logout', {}, {
         withCredentials: true,
         headers: { 'x-clear-auth': 'true' }
       })

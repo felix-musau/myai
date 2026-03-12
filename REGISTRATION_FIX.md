@@ -46,7 +46,7 @@
 The app has two separate components:
 - **`backend/`** - Node.js/Express server running on port 10000
   - Handles user registration via `/api/auth/register` endpoint
-  - Stores users in `backend/db/users.json`
+  - Stores users in PostgreSQL database (connected via `process.env.DATABASE_URL`)
   
 - **`frontend/`** - React/Vite app running on port 3001
   - Routes defined in `frontend/src/App.jsx`

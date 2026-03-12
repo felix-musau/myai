@@ -4,6 +4,7 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const fs = require('fs')
 const path = require('path')
+const pool = require('./db')        // initialize pg and users table
 const authRoutes = require('./routes/auth')
 const chatbotRoutes = require('./routes/chatbot')
 // predictRoutes removed – now using Groq API for chatbot
@@ -15,17 +16,11 @@ const medicalNewsRoutes = require('./routes/medicalNews')
 
 // Ensure db directory and files exist on startup (for Render ephemeral filesystem)
 const dbDir = path.join(__dirname, 'db')
-const usersFile = path.join(dbDir, 'users.json')
 const consultationsFile = path.join(dbDir, 'consultations.json')
 
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true })
   console.log('✅ Created db directory')
-}
-
-if (!fs.existsSync(usersFile)) {
-  fs.writeFileSync(usersFile, JSON.stringify({ users: [] }, null, 2))
-  console.log('✅ Created users.json')
 }
 
 if (!fs.existsSync(consultationsFile)) {
@@ -90,15 +85,18 @@ app.get('/api/health', (req, res) => {
 });
 
 // route used by contact form frontend; we don't need authentication here
-app.post('/send-message', (req, res) => {
+app.post('/api/contact', (req, res) => {
   const { name, email, message } = req.body || {};
-  // log the message so it can be reviewed on the server side
   console.log(`📩 Contact form submission:
   Name: ${name}
   Email: ${email}
   Message: ${message}`);
-  // in a real app you'd send an email or write to a database; for now just acknowledge
   res.json({ success: true });
+});
+// keep legacy path in case something still posts there
+app.post('/send-message', (req, res, next) => {
+  req.url = '/api/contact';
+  next();
 });
 
 const port = process.env.PORT || 10000;

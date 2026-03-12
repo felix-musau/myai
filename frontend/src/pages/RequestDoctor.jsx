@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -59,7 +59,7 @@ export default function RequestDoctor() {
     setLoading(true)
     
     try {
-      const response = await axios.post('/api/request-doctor', formData, { withCredentials: true })
+      const response = await api.post('/request-doctor', formData)
       setSuccessData(response.data)
       setShowSuccessModal(true)
       // Reset form

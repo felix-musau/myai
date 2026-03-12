@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../App'
+import api from '../services/api'
 
 export default function Profile() {
   const { user, logout } = useContext(AuthContext)
@@ -8,7 +9,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      await api.post('/auth/logout')
     } catch (e) {
       console.error('logout error', e)
     }

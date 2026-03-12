@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import api from '../services/api'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -98,11 +98,11 @@ export default function LabResults() {
     setLoading(true)
 
     try {
-      const response = await axios.post('/api/analyze-lab', {
+      const response = await api.post('/analyze-lab', {
         testType: selectedTest,
         values: activeTab === 'manual' ? values : null,
         fileName: activeTab === 'upload' ? fileName : null
-      }, { withCredentials: true })
+      })
       
       setResults(response.data)
       setShowModal(true)

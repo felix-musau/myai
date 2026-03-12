@@ -101,12 +101,8 @@ export default function Home() {
 
   const loadFact = async () => {
     try {
-      const res = await fetch('/api/fact')
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || `HTTP ${res.status}`)
-      }
-      const data = await res.json()
+      const res = await api.get('/fact')
+      const data = res.data
       setIsProTip(!!data.isTip)
       setFactVisible(false)
       setTimeout(() => {
@@ -134,12 +130,7 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/message', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
-      })
+      const res = await api.post('/message', { message: userMessage })
       if (res.status === 401) {
         // session expired or not logged in
         logout()
@@ -170,7 +161,7 @@ export default function Home() {
   const resetChat = async () => {
     if (confirm('Are you sure you want to reset?')) {
       try {
-        const res = await fetch('/api/reset', { method: 'POST', credentials: 'include' })
+        const res = await api.post('/reset')
         if (res.status === 401) {
           logout()
           navigate('/login', { replace: true })
