@@ -169,11 +169,6 @@ Remember: Short responses, ask questions, then suggest!`;
 router.post('/message', authMiddleware, async (req, res) => {
   console.log('Chat request from user', req.user?.username || req.ip)
   try {
-    if (!GROQ_KEY) {
-      console.warn('chat endpoint called without GROQ_API_KEY');
-      return res.status(503).json({ error: 'Chat service unavailable (missing API key)' });
-    }
-
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
@@ -181,21 +176,27 @@ router.post('/message', authMiddleware, async (req, res) => {
     const history = conversations[userKey] || [];
     history.push({ role: 'user', content: message });
 
-    const prompt = history.map(h => `${h.role}: ${h.content}`).join('\n');
-    const botReply = await callGroq(prompt);
+    let botReply;
+    if (GROQ_KEY) {
+      try {
+        const prompt = history.map(h => `${h.role}: ${h.content}`).join('\n');
+        botReply = await callGroq(prompt);
+      } catch (err) {
+        console.error('callGroq failed', err);
+        botReply = "Sorry, the chat service is temporarily unavailable.";
+      }
+    } else {
+      console.warn('chat endpoint hit without GROQ_API_KEY, returning stub');
+      botReply = "👋 Hello! Chat is not configured on this server. Please set GROQ_API_KEY.";
+    }
 
     history.push({ role: 'assistant', content: botReply });
     conversations[userKey] = history;
 
-    res.json({ reply: botReply });
+    return res.json({ reply: botReply });
   } catch (err) {
-    let msg = err.message || 'unknown'
-    console.error('Chat error:', err.response?.status, err.response?.data || msg);
-    // common DNS lookup failure
-    if (msg.includes('ENOTFOUND')) {
-      msg += ' (unable to resolve api.groq.com - check internet/DNS)';
-    }
-    res.status(500).json({ error: 'Chat service error: ' + msg });
+    console.error('Unexpected chat error:', err);
+    res.status(500).json({ error: 'Internal chat error' });
   }
 });
 

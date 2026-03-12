@@ -124,7 +124,7 @@ export default function Home() {
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
-    
+
     const userMessage = input.trim()
     setInput('')
     setMessages(prev => [...prev, { sender: 'user', text: userMessage }])
@@ -132,28 +132,12 @@ export default function Home() {
 
     try {
       const res = await api.post('/message', { message: userMessage })
-      if (res.status === 401) {
-        // session expired or not logged in
-        logout()
-        navigate('/login', { replace: true })
-        return
-      }
-      if (!res.ok) {
-        const text = await res.text()
-        console.error('Chat request failed', res.url, res.status, text)
-        throw new Error(text || `HTTP ${res.status}`)
-      }
-      const ct = res.headers.get('content-type') || ''
-      if (!ct.includes('application/json')) {
-        const bodyText = await res.text()
-        console.error('Chat returned non-json', res.url, bodyText.slice(0, 200))
-        throw new Error('Bad chat response: ' + bodyText.slice(0, 100))
-      }
-      const data = await res.json()
-      setMessages(prev => [...prev, { sender: 'bot', text: data.reply }])
+      const reply = res.data?.reply || 'No response from server'
+      setMessages(prev => [...prev, { sender: 'bot', text: reply }])
     } catch (err) {
       console.error('Chat error:', err)
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, something went wrong. Please try again.' }])
+      const msg = err.response?.data?.error || 'Sorry, something went wrong. Please try again.'
+      setMessages(prev => [...prev, { sender: 'bot', text: msg }])
     } finally {
       setLoading(false)
     }

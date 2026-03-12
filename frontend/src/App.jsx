@@ -635,7 +635,8 @@ function HomePage() {
       const res = await api.post('/chat', { message: userMsg })
       setMessages(prev => [...prev, { role: 'bot', content: res.data.reply }])
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, something went wrong.' }])
+      const msg = err.response?.data?.error || 'Sorry, something went wrong.'
+      setMessages(prev => [...prev, { role: 'bot', content: msg }])
     } finally {
       setLoading(false)
     }
