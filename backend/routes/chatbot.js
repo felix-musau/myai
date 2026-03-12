@@ -167,6 +167,7 @@ Remember: Short responses, ask questions, then suggest!`;
 
 // main endpoint used by frontend
 router.post('/message', authMiddleware, async (req, res) => {
+  console.log('Chat request from user', req.user?.username || req.ip)
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });

@@ -35,6 +35,7 @@ let newsCache = {
 };
 
 router.get('/medical-news', async (req, res) => {
+  console.log('Received /medical-news request from', req.ip || req.headers['x-forwarded-for'] || 'unknown')
   // if we fetched recently (10 mins), return cached
   const now = Date.now();
   if (now - newsCache.timestamp < 10 * 60 * 1000 && newsCache.articles.length) {

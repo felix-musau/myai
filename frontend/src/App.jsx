@@ -3,7 +3,9 @@ import { Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-r
 import axios from 'axios'
 
 // configure axios globally to use backend URL from Vite env
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE || '/api'  // use /api base; other calls omit the prefix
+// prefer explicit env var; if missing assume backend lives on same origin
+const defaultBase = import.meta.env.VITE_API_BASE || (window.location.origin + '/api')
+axios.defaults.baseURL = defaultBase  // use /api base; other calls omit the prefix
 console.log('Axios baseURL set to', axios.defaults.baseURL)
 axios.defaults.timeout = 10000  // network requests time out after 10s to avoid hanging
 
