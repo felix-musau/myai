@@ -169,6 +169,11 @@ Remember: Short responses, ask questions, then suggest!`;
 router.post('/message', authMiddleware, async (req, res) => {
   console.log('Chat request from user', req.user?.username || req.ip)
   try {
+    if (!GROQ_KEY) {
+      console.warn('chat endpoint called without GROQ_API_KEY');
+      return res.status(503).json({ error: 'Chat service unavailable (missing API key)' });
+    }
+
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
 
