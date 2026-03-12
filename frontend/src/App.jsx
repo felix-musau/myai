@@ -4,6 +4,7 @@ import axios from 'axios'
 
 // configure axios globally to use backend URL from Vite env
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE || '/api'  // use /api base; other calls omit the prefix
+console.log('Axios baseURL set to', axios.defaults.baseURL)
 axios.defaults.timeout = 10000  // network requests time out after 10s to avoid hanging
 
 // set up global error logging to catch runtime failures in production

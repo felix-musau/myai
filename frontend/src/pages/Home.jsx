@@ -148,11 +148,13 @@ export default function Home() {
       }
       if (!res.ok) {
         const text = await res.text()
+        console.error('Chat request failed', res.url, res.status, text)
         throw new Error(text || `HTTP ${res.status}`)
       }
       const ct = res.headers.get('content-type') || ''
       if (!ct.includes('application/json')) {
         const bodyText = await res.text()
+        console.error('Chat returned non-json', res.url, bodyText.slice(0, 200))
         throw new Error('Bad chat response: ' + bodyText.slice(0, 100))
       }
       const data = await res.json()

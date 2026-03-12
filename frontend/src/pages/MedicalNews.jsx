@@ -15,12 +15,15 @@ export default function MedicalNews() {
         const res = await fetch('/api/medical-news')
         if (!res.ok) {
           const text = await res.text()
-          throw new Error(text || 'network error')
+          const msg = text || `HTTP ${res.status}`
+          console.error('News request failed', res.url, res.status, msg)
+          throw new Error(msg)
         }
         const ct = res.headers.get('content-type') || ''
         if (!ct.includes('application/json')) {
           // likely hit frontend fallback or a proxy issue
           const body = await res.text()
+          console.error('News returned non-JSON', res.url, body.slice(0, 200))
           throw new Error('Expected JSON but got HTML or other response: ' +
             (body.trim().substring(0, 100))
           )
@@ -28,7 +31,7 @@ export default function MedicalNews() {
         const data = await res.json()
         setArticles(data.articles || [])
       } catch (err) {
-        console.error(err)
+        console.error('Failed fetching news:', err)
         setError(err.message || 'Failed to load news')
       } finally {
         setLoading(false)
