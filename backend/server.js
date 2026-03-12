@@ -16,16 +16,10 @@ const medicalNewsRoutes = require('./routes/medicalNews')
 
 // Ensure db directory and files exist on startup (for Render ephemeral filesystem)
 const dbDir = path.join(__dirname, 'db')
-const consultationsFile = path.join(dbDir, 'consultations.json')
 
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true })
   console.log('✅ Created db directory')
-}
-
-if (!fs.existsSync(consultationsFile)) {
-  fs.writeFileSync(consultationsFile, JSON.stringify({ consultations: [] }, null, 2))
-  console.log('✅ Created consultations.json')
 }
 
 const app = express()
