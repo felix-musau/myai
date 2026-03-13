@@ -53,10 +53,13 @@ module.exports.tokenBlacklist = tokenBlacklist
 
 // allow requests from the configured frontend URL plus localhost during development
 // undefined origin is permitted for tools like curl/Postman
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'].filter(Boolean)
+const allowedOrigins = [process.env.FRONTEND_URL || 'https://your-app.onrender.com', 'http://localhost:3000', 'http://127.0.0.1:3000'].filter(Boolean)
 app.use(cors({ 
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+    console.warn('CORS blocked origin:', origin)
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
