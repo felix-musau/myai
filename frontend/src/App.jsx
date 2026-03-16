@@ -899,11 +899,11 @@ function ContactPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <h3 className="text-lg font-semibold">Email</h3>
-              <a href="mailto:support@myaihealth.com" className="text-blue-300 hover:text-blue-100">support@myaihealth.com</a>
+              <a href="mailto:fellyMfelix@gmail.com" className="text-blue-300 hover:text-blue-100">fellyMfelix@gmail.com</a>
             </div>
             <div>
               <h3 className="text-lg font-semibold">Phone</h3>
-              <a href="tel:+11234567890" className="text-blue-300 hover:text-blue-100">+1 (123) 456-7890</a>
+              <a href="tel:+254759081142" className="text-blue-300 hover:text-blue-100">+254 759 081 142</a>
             </div>
           </div>
 
@@ -920,7 +920,7 @@ function ContactPage() {
                 <span>@myaihealth</span>
               </a>
               <a
-                href="https://www.instagram.com/myaihealth"
+                href="https://www.instagram.com/__s.1.r"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 hover:bg-slate-700 transition"
@@ -929,7 +929,7 @@ function ContactPage() {
                 <span>@myaihealth</span>
               </a>
               <a
-                href="https://www.linkedin.com/company/myaihealth"
+                href="https://www.linkedin.com/in/Felix-musau-Nduku"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 hover:bg-slate-700 transition"
