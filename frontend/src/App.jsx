@@ -48,6 +48,7 @@ import Home from './pages/Home'
 import Profile from './pages/Profile'
 import MedicalNews from './pages/MedicalNews'
 import Hospitals from './pages/Hospitals'
+import Terms from './pages/Terms'
 
 // Auth Context
 export const AuthContext = createContext(null)
@@ -295,6 +296,7 @@ function LoginPage() {
 // Register Page
 function RegisterPage() {
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
+  const [agreeTerms, setAgreeTerms] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -330,6 +332,11 @@ function RegisterPage() {
     
     if (form.password.length < 8) {
       setError('Password must be at least 8 characters')
+      return
+    }
+
+    if (!agreeTerms) {
+      setError('You must agree to the Terms & Conditions to continue.')
       return
     }
     
@@ -435,6 +442,24 @@ function RegisterPage() {
               disabled={loading}
             />
           </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              id="agreeTerms"
+              type="checkbox"
+              checked={agreeTerms}
+              onChange={e => setAgreeTerms(e.target.checked)}
+              disabled={loading}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="agreeTerms" className="text-sm text-gray-700">
+              I agree to the{' '}
+              <Link to="/terms" className="text-blue-600 hover:underline font-semibold">
+                Terms &amp; Conditions
+              </Link>
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -864,6 +889,57 @@ function ContactPage() {
             </button>
           </form>
         </div>
+
+        <div className="mt-8 rounded-xl bg-slate-900 text-slate-100 shadow p-6">
+          <h2 className="text-2xl font-bold mb-4">Need help?</h2>
+          <p className="text-gray-200 mb-4">
+            Our support team is here for you. Reach out anytime using the options below.
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <h3 className="text-lg font-semibold">Email</h3>
+              <a href="mailto:support@myaihealth.com" className="text-blue-300 hover:text-blue-100">support@myaihealth.com</a>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Phone</h3>
+              <a href="tel:+11234567890" className="text-blue-300 hover:text-blue-100">+1 (123) 456-7890</a>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold">Follow us</h3>
+            <div className="flex flex-wrap gap-3 mt-2">
+              <a
+                href="https://twitter.com/myaihealth"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 hover:bg-slate-700 transition"
+              >
+                <span>🐦</span>
+                <span>@myaihealth</span>
+              </a>
+              <a
+                href="https://www.instagram.com/myaihealth"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 hover:bg-slate-700 transition"
+              >
+                <span>📸</span>
+                <span>@myaihealth</span>
+              </a>
+              <a
+                href="https://www.linkedin.com/company/myaihealth"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2 hover:bg-slate-700 transition"
+              >
+                <span>🔗</span>
+                <span>MyAI Healthcare</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -935,6 +1011,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/hospitals" element={<ProtectedRoute><Hospitals /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
