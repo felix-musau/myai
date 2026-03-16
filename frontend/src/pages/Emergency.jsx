@@ -103,7 +103,7 @@ export default function Emergency() {
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.redCross}`}
-              className="bg-red-400/98 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-red-400/98 backdrop-blur text bg-red-500 rounded-xl p-4 hover:shadow-md transition text-center"
             >
               <span className="text-2xl block mb-1">🟥</span>
               <span className="font-bold">Red Cross</span>
