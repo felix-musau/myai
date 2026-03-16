@@ -10,14 +10,14 @@ export default function Emergency() {
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')] flex flex-col relative">
       
-      {/* Emergency Banner - Keep red for emergency urgency */}
-      <div className="bg-red-600/90 backdrop-blur-sm text-white py-4 px-6 relative z-10">
+      {/* Emergency Banner - Brightest thin red */}
+      <div className="bg-red-300/98 backdrop-blur-sm text-white py-4 px-6 relative z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <span className="text-3xl">⚠️</span>
             <div>
               <h1 className="text-2xl font-bold font-medical">Medical Emergency?</h1>
-              <p className="text-red-100">If you or someone else is in immediate danger, call for help now</p>
+              <p className="text-red-50">If you or someone else is in immediate danger, call for help now</p>
             </div>
           </div>
           <div className="flex gap-3 flex-wrap">
@@ -41,8 +41,8 @@ export default function Emergency() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {emergencyData.instructions.map((instruction, index) => (
-              <div key={index} className="flex items-start gap-2 p-3 bg-red-50/80 backdrop-blur rounded-lg">
-                <span className="text-red-500 font-bold">{index + 1}.</span>
+              <div key={index} className="flex items-start gap-2 p-3 bg-red-50/95 backdrop-blur rounded-lg">
+                <span className="text-red-400 font-bold">{index + 1}.</span>
                 <span className="text-gray-700">{instruction}</span>
               </div>
             ))}
@@ -60,11 +60,11 @@ export default function Emergency() {
             {emergencyData.symptoms.map((symptom) => (
               <div
                 key={symptom.id}
-                className="bg-red-50/80 backdrop-blur border border-red-200/50 rounded-xl p-4 hover:shadow-md transition"
+                className="bg-red-50/95 backdrop-blur border border-red-300/70 rounded-xl p-4 hover:shadow-md transition"
               >
                 <span className="text-3xl block mb-2">{symptom.icon}</span>
-                <h3 className="font-bold text-red-800 font-medical">{symptom.title}</h3>
-                <p className="text-sm text-red-600 mt-1">{symptom.description}</p>
+                <h3 className="font-bold text-red-500 font-medical">{symptom.title}</h3>
+                <p className="text-sm text-red-400 mt-1">{symptom.description}</p>
               </div>
             ))}
           </div>
@@ -87,7 +87,7 @@ export default function Emergency() {
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.ambulance}`}
-              className="bg-red-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-red-300/95 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
             >
               <span className="text-2xl block mb-1">🚑</span>
               <span className="font-bold">Ambulance</span>
@@ -103,7 +103,7 @@ export default function Emergency() {
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.redCross}`}
-              className="bg-red-800/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-red-400/98 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
             >
               <span className="text-2xl block mb-1">🟥</span>
               <span className="font-bold">Red Cross</span>

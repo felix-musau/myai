@@ -16,14 +16,14 @@ export default function Button({
   const variantClasses = {
     primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500 shadow-md hover:shadow-lg',
     secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300',
-    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-md hover:shadow-lg',
-    emergency: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-lg hover:shadow-xl animate-pulse',
+danger: 'bg-red-400 text-white hover:bg-red-500 focus:ring-red-400 shadow-md hover:shadow-lg',
+emergency: 'bg-red-300 text-white hover:bg-red-400 focus:ring-red-300 shadow-lg hover:shadow-xl animate-pulse',
     success: 'bg-green-500 text-white hover:bg-green-600 focus:ring-green-500 shadow-md hover:shadow-lg',
     outline: 'bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-500',
     // Glass variants - blend with background images
     glass: 'bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 hover:border-white/50 focus:ring-white/50 shadow-md hover:shadow-lg',
     glassPrimary: 'bg-blue-500/40 backdrop-blur-sm border border-blue-300/30 text-white hover:bg-blue-500/60 hover:border-blue-300/50 focus:ring-blue-300/50 shadow-md hover:shadow-lg',
-    glassDanger: 'bg-red-500/40 backdrop-blur-sm border border-red-300/30 text-white hover:bg-red-500/60 hover:border-red-300/50 focus:ring-red-300/50 shadow-md hover:shadow-lg',
+glassDanger: 'bg-red-400/50 backdrop-blur-sm border border-red-400/40 text-white hover:bg-red-400/70 hover:border-red-400/50 focus:ring-red-400/50 shadow-md hover:shadow-lg',
     glassSuccess: 'bg-green-500/40 backdrop-blur-sm border border-green-300/30 text-white hover:bg-green-500/60 hover:border-green-300/50 focus:ring-green-300/50 shadow-md hover:shadow-lg',
   }
 
