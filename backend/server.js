@@ -13,6 +13,7 @@ const doctorRequestsRoutes = require('./routes/doctorRequests')
 const testimonialsRoutes = require('./routes/testimonials')
 const labResultsRoutes = require('./routes/labResults')
 const medicalNewsRoutes = require('./routes/medicalNews')
+const adminRoutes = require('./routes/admin')
 
 // Ensure db directory and files exist on startup (for Render ephemeral filesystem)
 const dbDir = path.join(__dirname, 'db')
@@ -74,6 +75,7 @@ app.use('/api', doctorRequestsRoutes)
 app.use('/api', testimonialsRoutes)
 app.use('/api', labResultsRoutes)
 app.use('/api', medicalNewsRoutes)
+app.use('/api', adminRoutes)
 
 
 // simple health check

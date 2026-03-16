@@ -49,6 +49,7 @@ import Profile from './pages/Profile'
 import MedicalNews from './pages/MedicalNews'
 import Hospitals from './pages/Hospitals'
 import Terms from './pages/Terms'
+import AdminDashboard from './pages/AdminDashboard'
 
 // Auth Context
 export const AuthContext = createContext(null)
@@ -69,6 +70,28 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />
   }
   
+  return children
+}
+
+function AdminRoute({ children }) {
+  const { user, loading } = useContext(AuthContext)
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!user.isAdmin) {
+    return <Navigate to="/home" replace />
+  }
+
   return children
 }
 
@@ -115,6 +138,10 @@ navigate('/login', { replace: true })
     { href: '/emergency', label: 'Alert', emergency: true },
     { href: '/profile', label: 'Profile' }
   ]
+
+  if (user?.isAdmin) {
+    navLinks.splice(6, 0, { href: '/admin', label: 'Admin' })
+  }
 
   return (
     <nav className="bg-blue-600 p-4">
@@ -219,8 +246,10 @@ function LoginPage() {
     try {
       const res = await api.post('/auth/login', form)
       // store user info object
-      login({ username: res.data.username, email: res.data.email })
-      navigate('/home')
+      const isAdmin = !!res.data.isAdmin
+      login({ username: res.data.username, email: res.data.email, isAdmin })
+      // send admins to the dashboard, regular users to home
+      navigate(isAdmin ? '/admin' : '/home')
     } catch (err) {
       setError(
         err.code === 'ECONNABORTED'
@@ -249,11 +278,11 @@ function LoginPage() {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Username or Email</label>
             <input
               type="text"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="Enter username"
+              placeholder="Enter username or email"
               value={form.username}
               onChange={e => setForm({...form, username: e.target.value})}
               required
@@ -350,9 +379,10 @@ function RegisterPage() {
         password: form.password
       }, { withCredentials: true })
       console.log('Registration response:', res.data)
-      if(res.data.username){
-        login({ username: res.data.username, email: res.data.email })
-        navigate('/home')
+      if (res.data.username) {
+        const isAdmin = !!res.data.isAdmin
+        login({ username: res.data.username, email: res.data.email, isAdmin })
+        navigate(isAdmin ? '/admin' : '/home')
       } else {
         setSuccess(res.data.message)
         setTimeout(() => navigate('/login'), 3000)
@@ -487,6 +517,7 @@ function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [resetToken, setResetToken] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   
@@ -499,7 +530,10 @@ function ForgotPasswordPage() {
     try {
       const res = await api.post('/auth/forgot-password', { email })
       setSuccess(res.data.message)
-      setTimeout(() => navigate('/login'), 3000)
+      setResetToken(res.data.resetToken || '')
+
+      // keep user on page so they can use the link; auto-redirect in case they're done
+      setTimeout(() => navigate('/login'), 8000)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to send reset link')
     } finally {
@@ -516,7 +550,24 @@ function ForgotPasswordPage() {
           <p className="text-gray-600 mt-2">Enter your email to receive reset link</p>
         </div>
         {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">{error}</div>}
-        {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">{success}</div>}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+            <div>{success}</div>
+            {resetToken && (
+              <div className="mt-2 text-sm">
+                Here is your reset link:
+                <div className="mt-1">
+                  <a
+                    href={`/reset-password?token=${resetToken}`}
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {`${window.location.origin}/reset-password?token=${resetToken}`}
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -971,9 +1022,8 @@ export default function App() {
     try {
       const res = await api.get('/auth/check')
       if (res.data.authenticated) {
-        // backend returns { authenticated:true, username, email }
-        // preserve the same user object shape created during login
-        setUser({ username: res.data.username, email: res.data.email })
+        // backend returns { authenticated:true, username, email, isAdmin }
+        setUser({ username: res.data.username, email: res.data.email, isAdmin: res.data.isAdmin || false })
       }
     } catch (err) {
       console.error('Auth check error:', err)
@@ -1022,6 +1072,7 @@ export default function App() {
           <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
           <Route path="/lab-results" element={<ProtectedRoute><LabResults /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/medical-news" element={<ProtectedRoute><MedicalNews /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
         </Routes>

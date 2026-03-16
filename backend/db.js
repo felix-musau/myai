@@ -1,39 +1,75 @@
-const { Pool } = require('pg');
+const fs = require('fs')
+const path = require('path')
 
-// create pool using DATABASE_URL env var; many hosts require SSL in prod
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+const dbDir = path.join(__dirname, 'db')
+const usersPath = path.join(dbDir, 'users.json')
+const consultationsPath = path.join(dbDir, 'consultations.json')
+const doctorRequestsPath = path.join(dbDir, 'doctor_requests.json')
 
-// ensure users table exists on startup
-async function init() {
-  const create = `
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username TEXT,
-      email TEXT UNIQUE,
-      password TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS consultations (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      symptoms TEXT,
-      predicted_disease TEXT,
-      confidence REAL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-  try {
-    await pool.query(create);
-    console.log('✅ users table ensured');
-  } catch (err) {
-    console.error('❌ error creating users table', err);
+function ensureDir() {
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true })
   }
 }
 
-init().catch(err => console.error('db init failure', err));
+function ensureFile(filePath, defaultData) {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8')
+  }
+}
 
-module.exports = pool;
+function readJson(filePath, defaultData) {
+  ensureDir()
+  ensureFile(filePath, defaultData)
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8')
+    return JSON.parse(raw)
+  } catch (err) {
+    console.error('Error reading JSON file', filePath, err)
+    return defaultData
+  }
+}
+
+function writeJson(filePath, data) {
+  ensureDir()
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
+}
+
+function getNextId(items) {
+  const max = items.reduce((acc, item) => Math.max(acc, item.id || 0), 0)
+  return max + 1
+}
+
+function getUsers() {
+  return readJson(usersPath, { users: [] }).users || []
+}
+
+function saveUsers(users) {
+  writeJson(usersPath, { users })
+}
+
+function getConsultations() {
+  return readJson(consultationsPath, { consultations: [] }).consultations || []
+}
+
+function saveConsultations(consultations) {
+  writeJson(consultationsPath, { consultations })
+}
+
+function getDoctorRequests() {
+  return readJson(doctorRequestsPath, { requests: [] }).requests || []
+}
+
+function saveDoctorRequests(requests) {
+  writeJson(doctorRequestsPath, { requests })
+}
+
+module.exports = {
+  getUsers,
+  saveUsers,
+  getConsultations,
+  saveConsultations,
+  getDoctorRequests,
+  saveDoctorRequests,
+  getNextId
+}
