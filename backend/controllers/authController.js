@@ -1,5 +1,6 @@
 ﻿const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer')
 const {
   getUsers,
   saveUsers,
@@ -8,6 +9,69 @@ const {
 
 // token blacklist (logged out tokens) kept in memory
 let tokenBlacklist = new Set()
+
+function getTransporter() {
+  const host = process.env.EMAIL_HOST || process.env.SMTP_HOST
+  const port = Number(process.env.EMAIL_PORT || process.env.SMTP_PORT || 587)
+  const user = process.env.EMAIL_USER || process.env.SMTP_USER
+  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS
+  const secure = (process.env.EMAIL_SECURE === 'true') || false
+
+  if (host && user && pass) {
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass }
+    })
+  }
+  return null
+}
+
+async function sendVerificationEmail(email, token, expiresAt) {
+  const transport = getTransporter()
+  const fromAddress = process.env.EMAIL_FROM || process.env.FROM_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER || 'no-reply@example.com'
+
+  const subject = 'Verify your MyAI Healthcare account'
+  const text = `Your verification code is: ${token}\nIt expires at ${expiresAt} (UTC).` +
+    '\n\nIf you did not request this, ignore it.'
+  const html = `<p>Your verification code is: <strong>${token}</strong></p><p>Expires at: ${expiresAt} UTC</p>`
+
+  if (transport) {
+    await transport.sendMail({
+      from: fromAddress,
+      to: email,
+      subject,
+      text,
+      html
+    })
+  } else {
+    console.log(`📨 [DEV] Email sending not configured. Verification token for ${email}: ${token}, expires ${expiresAt}`)
+  }
+}
+
+async function sendPasswordResetEmail(email, token, expiresAt, frontendUrl) {
+  const transport = getTransporter()
+  const fromAddress = process.env.EMAIL_FROM || process.env.FROM_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER || 'no-reply@example.com'
+  const resetLink = `${frontendUrl}/reset-password?token=${token}`
+
+  const subject = 'Reset your MyAI Healthcare password'
+  const text = `Click the link below to reset your password:\n${resetLink}\n\nThis link expires at ${expiresAt} (UTC).\n\nIf you did not request this, ignore it.`
+  const html = `<p>Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires at: ${expiresAt} UTC</p>`
+
+  if (transport) {
+    await transport.sendMail({
+      from: fromAddress,
+      to: email,
+      subject,
+      text,
+      html
+    })
+  } else {
+    console.log(`📨 [DEV] Email sending not configured. Password reset token for ${email}: ${token}\nReset link: ${resetLink}\nExpires: ${expiresAt}`)
+  }
+}
+
 function isTokenInvalidated(token) {
   return token && typeof token === 'string' && tokenBlacklist.has(token)
 }
@@ -29,7 +93,10 @@ const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
   .filter(Boolean)
 
 function generateToken(user) {
-  const isAdmin = user?.email && adminEmails.includes(user.email.toLowerCase())
+  // Support admin flag from either env list or a database field (e.g. is_admin)
+  const isAdminFromDb = user?.isAdmin || user?.is_admin || false
+  const isAdminFromEnv = user?.email && adminEmails.includes(user.email.toLowerCase())
+  const isAdmin = isAdminFromDb || isAdminFromEnv
   return jwt.sign(
     { id: user.id, username: user.username, email: user.email, isAdmin },
     process.env.JWT_SECRET,
@@ -55,17 +122,38 @@ async function register(req, res) {
     const rounds = process.env.NODE_ENV === 'production' ? 8 : 10
     const hash = await bcrypt.hash(password, rounds)
 
+    const emailVerificationToken = generateRandomToken()
+    const requireVerification = process.env.REQUIRE_EMAIL_VERIFICATION === 'true'
+
+    const verificationExpiry = new Date(Date.now() + 60 * 1000).toISOString() // 1 minute
+
     const newUser = {
       id: getNextId(users),
       username,
       email,
       password_hash: hash,
-      is_verified: true,
+      is_verified: !requireVerification,
+      email_verification_token: requireVerification ? emailVerificationToken : undefined,
+      email_verification_expires: requireVerification ? verificationExpiry : undefined,
       created_at: new Date().toISOString()
     }
 
     users.push(newUser)
     saveUsers(users)
+
+    if (requireVerification) {
+      try {
+        await sendVerificationEmail(email, emailVerificationToken, verificationExpiry)
+      } catch (err) {
+        console.error('sendVerificationEmail error:', err)
+      }
+
+      return res.json({
+        message: 'Registered successfully. Please verify your email with the code sent to your inbox.',
+        emailVerificationToken: emailVerificationToken,
+        emailVerificationExpires: verificationExpiry
+      })
+    }
 
     if (!checkSecret(res)) return
     const token = generateToken(newUser)
@@ -102,6 +190,11 @@ async function login(req, res) {
     if (!user) {
       console.log('👤 User not found:', identifier)
       return res.status(400).json({ error: 'Invalid credentials' })
+    }
+
+    if (!user.is_verified) {
+      console.log('⛔ Login attempt for unverified user:', identifier)
+      return res.status(403).json({ error: 'Email not verified. Please verify your email first.' })
     }
 
     const ok = await bcrypt.compare(password, user.password_hash)
@@ -174,7 +267,7 @@ async function forgotPassword(req, res) {
     const user = users.find((u) => u.email === email)
     if (!user) {
       // Always return success to avoid leaking which emails exist
-      return res.json({ message: 'If an account exists, a password reset link has been sent.' })
+      return res.json({ message: 'If an account exists with this email, a password reset link has been sent.' })
     }
 
     const token = generateRandomToken()
@@ -183,15 +276,19 @@ async function forgotPassword(req, res) {
     user.password_reset_expires = expiresAt
     saveUsers(users)
 
-    // In production, you would send an email with a reset link.
-    // For now, we return the token so it can be used in the frontend flow.
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+    try {
+      await sendPasswordResetEmail(email, token, expiresAt, frontendUrl)
+    } catch (err) {
+      console.error('sendPasswordResetEmail error:', err)
+    }
+
     return res.json({
-      message: 'Password reset token created. Use it to reset your password.',
-      resetToken: token
+      message: 'If an account exists with this email, a password reset link has been sent.'
     })
   } catch (err) {
     console.error('forgotPassword error', err)
-    return res.status(500).json({ error: 'Failed to create reset token' })
+    return res.status(500).json({ error: 'Failed to process password reset request' })
   }
 }
 
@@ -223,6 +320,103 @@ async function resetPassword(req, res) {
   }
 }
 
+async function verifyEmail(req, res) {
+  try {
+    const { token } = req.body
+    if (!token) return res.status(400).json({ error: 'Verification token is required' })
+
+    const users = getUsers()
+    const user = users.find((u) => u.email_verification_token === token)
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' })
+    }
+
+    if (!user.email_verification_expires || new Date(user.email_verification_expires) < new Date()) {
+      return res.status(400).json({ error: 'Verification token expired. Please request a new one.' })
+    }
+
+    user.is_verified = true
+    delete user.email_verification_token
+    delete user.email_verification_expires
+    saveUsers(users)
+
+    return res.json({ message: 'Email verified successfully. You can now log in.' })
+  } catch (err) {
+    console.error('verifyEmail error', err)
+    return res.status(500).json({ error: 'Failed to verify email' })
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    const userId = req.user?.id
+    const { currentPassword, newPassword } = req.body
+
+    if (!userId || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new passwords are required' })
+    }
+
+    const users = getUsers()
+    const user = users.find((u) => u.id === userId)
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const validCurrent = await bcrypt.compare(currentPassword, user.password_hash)
+    if (!validCurrent) {
+      return res.status(400).json({ error: 'Current password is incorrect' })
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters long' })
+    }
+
+    const rounds = process.env.NODE_ENV === 'production' ? 8 : 10
+    user.password_hash = await bcrypt.hash(newPassword, rounds)
+    saveUsers(users)
+
+    return res.json({ message: 'Password changed successfully' })
+  } catch (err) {
+    console.error('changePassword error', err)
+    return res.status(500).json({ error: 'Failed to change password' })
+  }
+}
+
+async function resendVerification(req, res) {
+  try {
+    const { email } = req.body
+    if (!email) { return res.status(400).json({ error: 'Email is required' }) }
+
+    const users = getUsers()
+    const user = users.find((u) => u.email === email)
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({ error: 'User already verified' })
+    }
+
+    const token = generateRandomToken()
+    const expires = new Date(Date.now() + 60 * 1000).toISOString() // 1 minute
+
+    user.email_verification_token = token
+    user.email_verification_expires = expires
+    saveUsers(users)
+
+    try {
+      await sendVerificationEmail(email, token, expires)
+    } catch (err) {
+      console.error('sendVerificationEmail error:', err)
+    }
+
+    return res.json({ message: 'Verification token resent', emailVerificationToken: token, emailVerificationExpires: expires })
+  } catch (err) {
+    console.error('resendVerification error', err)
+    return res.status(500).json({ error: 'Failed to resend verification token' })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -230,6 +424,9 @@ module.exports = {
   checkAuth,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerification,
+  changePassword,
   isTokenInvalidated,
   tokenBlacklist
 }

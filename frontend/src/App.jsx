@@ -46,6 +46,8 @@ import FAQ from './pages/FAQ'
 import LabResults from './pages/LabResults'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
+import Chat from './pages/Chat'
+import VerifyEmail from './pages/VerifyEmail'
 import MedicalNews from './pages/MedicalNews'
 import Hospitals from './pages/Hospitals'
 import Terms from './pages/Terms'
@@ -132,6 +134,7 @@ navigate('/login', { replace: true })
   const navLinks = [
     { href: '/home', label: 'Home' },
     { href: '/hospitals', label: 'Map' },
+    { href: '/chat', label: 'Chat' },
     { href: '/medical-news', label: 'News' },
     { href: '/success-stories', label: 'Reviews' },
     { href: '/lab-results', label: 'Labs' },
@@ -379,14 +382,26 @@ function RegisterPage() {
         password: form.password
       }, { withCredentials: true })
       console.log('Registration response:', res.data)
+
       if (res.data.username) {
         const isAdmin = !!res.data.isAdmin
         login({ username: res.data.username, email: res.data.email, isAdmin })
         navigate(isAdmin ? '/admin' : '/home')
-      } else {
-        setSuccess(res.data.message)
-        setTimeout(() => navigate('/login'), 3000)
+        return
       }
+
+      if (res.data.emailVerificationToken) {
+        setSuccess('Registration successful! Verify your email now.')
+        const params = new URLSearchParams({
+          token: res.data.emailVerificationToken,
+          expires: res.data.emailVerificationExpires
+        })
+        setTimeout(() => navigate(`/verify-email?${params.toString()}`), 1500)
+        return
+      }
+
+      setSuccess(res.data.message)
+      setTimeout(() => navigate('/login'), 3000)
     } catch (err) {
       console.error('Registration error:', err)
       setError(
@@ -517,7 +532,6 @@ function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [resetToken, setResetToken] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   
@@ -529,11 +543,9 @@ function ForgotPasswordPage() {
     
     try {
       const res = await api.post('/auth/forgot-password', { email })
-      setSuccess(res.data.message)
-      setResetToken(res.data.resetToken || '')
-
-      // keep user on page so they can use the link; auto-redirect in case they're done
-      setTimeout(() => navigate('/login'), 8000)
+      setSuccess(res.data.message || 'Check your email for the password reset link. It will expire in 1 hour.')
+      setEmail('')
+      setTimeout(() => navigate('/login'), 5000)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to send reset link')
     } finally {
@@ -553,19 +565,7 @@ function ForgotPasswordPage() {
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
             <div>{success}</div>
-            {resetToken && (
-              <div className="mt-2 text-sm">
-                Here is your reset link:
-                <div className="mt-1">
-                  <a
-                    href={`/reset-password?token=${resetToken}`}
-                    className="text-blue-600 hover:underline break-all"
-                  >
-                    {`${window.location.origin}/reset-password?token=${resetToken}`}
-                  </a>
-                </div>
-              </div>
-            )}
+            <div className="text-sm mt-2">Redirecting to login in 5 seconds...</div>
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -578,11 +578,12 @@ function ForgotPasswordPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
+              disabled={loading || success}
             />
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50"
           >
             {loading ? 'Sending...' : 'Send Reset Link'}
@@ -600,7 +601,8 @@ function ForgotPasswordPage() {
 function ResetPasswordPage() {
   const location = useLocation()
   const params = new URLSearchParams(location.search)
-  const token = params.get('token')
+  const tokenFromUrl = params.get('token')
+  const [token, setToken] = useState(tokenFromUrl || '')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -611,15 +613,27 @@ function ResetPasswordPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    
+    if (!token.trim()) {
+      setError('Reset token is required')
+      return
+    }
+    
     if (password !== confirm) {
       setError('Passwords do not match')
       return
     }
+    
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+    
     setLoading(true)
     try {
-      const res = await api.post('/auth/reset-password', { token, password })
-      setSuccess(res.data.message)
-      setTimeout(() => navigate('/login'), 3000)
+      const res = await api.post('/auth/reset-password', { token: token.trim(), password })
+      setSuccess(res.data.message || 'Password reset successfully. Redirecting to login...')
+      setTimeout(() => navigate('/login'), 2000)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to reset password')
     } finally {
@@ -638,12 +652,25 @@ function ResetPasswordPage() {
         {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">{error}</div>}
         {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">{success}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!tokenFromUrl && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reset Token</label>
+              <input
+                type="text"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition font-mono text-sm"
+                placeholder="Paste the token from your email"
+                value={token}
+                onChange={e => setToken(e.target.value)}
+                required
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
             <input
               type="password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="Enter new password"
+              placeholder="Enter new password (min 8 chars)"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
@@ -654,7 +681,7 @@ function ResetPasswordPage() {
             <input
               type="password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="Confirm new password"
+              placeholder="Confirm your new password"
               value={confirm}
               onChange={e => setConfirm(e.target.value)}
               required
@@ -1061,6 +1088,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/hospitals" element={<ProtectedRoute><Hospitals /></ProtectedRoute>} />
@@ -1072,6 +1100,7 @@ export default function App() {
           <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
           <Route path="/lab-results" element={<ProtectedRoute><LabResults /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/medical-news" element={<ProtectedRoute><MedicalNews /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />
