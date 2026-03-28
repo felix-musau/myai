@@ -11,20 +11,43 @@ const {
 let tokenBlacklist = new Set()
 
 function getTransporter() {
-  const host = process.env.EMAIL_HOST || process.env.SMTP_HOST
-  const port = Number(process.env.EMAIL_PORT || process.env.SMTP_PORT || 587)
-  const user = process.env.EMAIL_USER || process.env.SMTP_USER
-  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS
-  const secure = (process.env.EMAIL_SECURE === 'true') || false
-
-  if (host && user && pass) {
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass }
-    })
+  // Try SendGrid first
+  if (process.env.SENDGRID_API_KEY) {
+    const sgMail = require('@sendgrid/mail')
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+    
+    return {
+      sendMail: async (options) => {
+        const msg = {
+          to: options.to,
+          from: process.env.SENDGRID_FROM_EMAIL || 'noreply@example.com',
+          subject: options.subject,
+          text: options.text,
+          html: options.html
+        }
+        await sgMail.send(msg)
+      }
+    }
   }
+  
+  // Fallback to nodemailer for local SMTP
+  if (process.env.SMTP_HOST) {
+    const host = process.env.EMAIL_HOST || process.env.SMTP_HOST
+    const port = Number(process.env.EMAIL_PORT || process.env.SMTP_PORT || 587)
+    const user = process.env.EMAIL_USER || process.env.SMTP_USER
+    const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS
+    const secure = (process.env.EMAIL_SECURE === 'true') || false
+
+    if (host && user && pass) {
+      return nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        auth: { user, pass }
+      })
+    }
+  }
+  
   return null
 }
 
@@ -38,13 +61,20 @@ async function sendVerificationEmail(email, token, expiresAt) {
   const html = `<p>Your verification code is: <strong>${token}</strong></p><p>Expires at: ${expiresAt} UTC</p>`
 
   if (transport) {
-    await transport.sendMail({
-      from: fromAddress,
-      to: email,
-      subject,
-      text,
-      html
-    })
+    try {
+      await transport.sendMail({
+        from: fromAddress,
+        to: email,
+        subject,
+        text,
+        html
+      })
+      console.log(`✅ Verification email sent to ${email}`)
+    } catch (err) {
+      console.error(`⚠️ Failed to send verification email to ${email}:`, err.message)
+      // Log token for dev/fallback
+      console.log(`📨 [FALLBACK] Verification token for ${email}: ${token}, expires ${expiresAt}`)
+    }
   } else {
     console.log(`📨 [DEV] Email sending not configured. Verification token for ${email}: ${token}, expires ${expiresAt}`)
   }
@@ -60,13 +90,20 @@ async function sendPasswordResetEmail(email, token, expiresAt, frontendUrl) {
   const html = `<p>Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires at: ${expiresAt} UTC</p>`
 
   if (transport) {
-    await transport.sendMail({
-      from: fromAddress,
-      to: email,
-      subject,
-      text,
-      html
-    })
+    try {
+      await transport.sendMail({
+        from: fromAddress,
+        to: email,
+        subject,
+        text,
+        html
+      })
+      console.log(`✅ Password reset email sent to ${email}`)
+    } catch (err) {
+      console.error(`⚠️ Failed to send password reset email to ${email}:`, err.message)
+      // Log token for dev/fallback
+      console.log(`📨 [FALLBACK] Password reset token for ${email}: ${token}\nReset link: ${resetLink}\nExpires: ${expiresAt}`)
+    }
   } else {
     console.log(`📨 [DEV] Email sending not configured. Password reset token for ${email}: ${token}\nReset link: ${resetLink}\nExpires: ${expiresAt}`)
   }
@@ -145,7 +182,7 @@ async function register(req, res) {
       try {
         await sendVerificationEmail(email, emailVerificationToken, verificationExpiry)
       } catch (err) {
-        console.error('sendVerificationEmail error:', err)
+        console.error('sendVerificationEmail error:', err.message)
       }
 
       return res.json({
