@@ -249,7 +249,7 @@ export default function Home() {
               to="/hospitals"
               className="bg-gradient-to-r from-green-500 to-teal-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-green-600 hover:to-teal-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              <FiMapPin /> Find Hospitals
+              📍 Find Hospitals
             </Link>
             <Link
               to="/contact"

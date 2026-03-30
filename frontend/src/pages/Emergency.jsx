@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiAlertTriangle, FiPhone, FiMapPin, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
+import { FiAlertTriangle, FiPhone, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
 import { FaAmbulance, FaHospital, FaShieldAlt, FaFireExtinguisher, FaHeartbeat, FaUser } from 'react-icons/fa'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -152,7 +152,7 @@ export default function Emergency() {
                 </div>
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex items-start gap-2 text-gray-600">
-                    <FiMapPin className="text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-blue-600 text-lg">📍</span>
                     <span>{hospital.address}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">

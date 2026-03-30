@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FiUsers, FiMessageCircle, FiPhone, FiMapPin, FiClock } from 'react-icons/fi'
+import { FiUsers, FiMessageCircle, FiPhone, FiClock } from 'react-icons/fi'
 import { FaChartBar } from 'react-icons/fa'
 import api from '../services/api'
 
