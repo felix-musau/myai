@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
-import { FiDownload, FiHome, FiLogOut, FiChevronLeft } from 'react-icons/fi'
+import { FiDownload, FiChevronLeft } from 'react-icons/fi'
 import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { FiStar } from 'react-icons/fi'
 import { FaStar } from 'react-icons/fa'
 import api from '../services/api'
 import { AuthContext } from '../App'

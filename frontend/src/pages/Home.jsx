@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
-import { FiLightbulb, FiMessageCircle, FiLogOut, FiHistory, FiMapPin, FiPhone, FiRefreshCw } from 'react-icons/fi'
 import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 
@@ -200,13 +199,13 @@ export default function Home() {
           onClick={() => setMobileView('facts')}
           className={`flex-1 py-3 text-center font-medium flex items-center justify-center gap-2 ${mobileView === 'facts' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          <FiLightbulb /> Facts
+          💡 Facts
         </button>
         <button
           onClick={() => setMobileView('chat')}
           className={`flex-1 py-3 text-center font-medium flex items-center justify-center gap-2 ${mobileView === 'chat' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          <FiMessageCircle /> Chat
+          💬 Chat
         </button>
       </div>
 
@@ -226,7 +225,7 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
               <h2 className="text-white text-xl font-bold flex items-center gap-2">
-                <FiLightbulb className="text-2xl" /> Did You Know?
+                💡 Did You Know?
               </h2>
             </div>
             <div className="p-6">
@@ -244,7 +243,7 @@ export default function Home() {
               to="/history"
               className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-purple-600 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              <FiHistory /> View History
+              📋 View History
             </Link>
             <Link
               to="/hospitals"
@@ -327,7 +326,7 @@ export default function Home() {
               onClick={resetChat}
               className="w-full mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-1"
             >
-              <FiRefreshCw /> Reset Chat
+              🔄 Reset Chat
             </button>
           </div>
         </div>
