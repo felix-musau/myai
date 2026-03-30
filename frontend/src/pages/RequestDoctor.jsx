@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiUser, FiMail, FiPhone, FiFileText, FiCalendar, FiClock, FiCheckCircle } from 'react-icons/fi'
+import { FiUser, FiMail, FiFileText, FiCalendar, FiClock, FiCheckCircle } from 'react-icons/fi'
 import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 import Card from '../components/ui/Card'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiAlertTriangle, FiPhone, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
+import { FiAlertTriangle, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
 import { FaAmbulance, FaHospital, FaShieldAlt, FaFireExtinguisher, FaHeartbeat, FaUser } from 'react-icons/fa'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -27,7 +27,7 @@ export default function Emergency() {
               href={`tel:${emergencyData.emergencyNumber}`}
               className="bg-white text-red-600 font-bold px-8 py-4 rounded-xl text-lg flex items-center gap-2 hover:bg-red-50 transition-all transform hover:scale-105 shadow-lg"
             >
-              <FiPhone className="text-2xl" />
+              <span className="text-2xl">☎️</span>
               Call {emergencyData.emergencyNumber}
             </a>
           </div>
@@ -80,7 +80,7 @@ export default function Emergency() {
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FiPhone className="text-white text-xl" />
+              <span className="text-white text-xl">☎️</span>
             </div>
             <h2 className="text-xl font-bold text-gray-800 font-medical">Kenya Emergency Numbers</h2>
           </div>
@@ -156,7 +156,7 @@ export default function Emergency() {
                     <span>{hospital.address}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <FiPhone className="text-blue-600" />
+                    <span className="text-blue-600 text-lg">☎️</span>
                     <span>{hospital.phone}</span>
                   </div>
                   <div className="text-gray-500 text-xs">Type: {hospital.type}</div>

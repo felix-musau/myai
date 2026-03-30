@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiMail, FiPhone, FiClock, FiChevronLeft } from 'react-icons/fi'
+import { FiMail, FiClock, FiChevronLeft } from 'react-icons/fi'
 import { FaHospital } from 'react-icons/fa'
 import { useAuth } from '../App'
 import api from '../services/api'
@@ -68,7 +68,7 @@ export default function Contact() {
           {/* Page Title */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-              <FiPhone className="text-blue-600 text-2xl" />
+              <span className="text-blue-600 text-2xl">☎️</span>
               Contact & Support
             </h2>
             <p className="text-gray-600 mt-2">Get in touch with our team</p>
@@ -149,7 +149,7 @@ export default function Contact() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <FiPhone className="text-2xl text-green-600 flex-shrink-0" />
+                <span className="text-2xl text-green-600 flex-shrink-0">☎️</span>
                 <div>
                   <p className="font-medium text-gray-700">Phone</p>
                   <p className="text-gray-600">1-800-MYAI-HEALTH</p>
