@@ -78,9 +78,16 @@ app.use('/api', medicalNewsRoutes)
 app.use('/api', adminRoutes)
 
 
-// simple health check
+// health check endpoint for uptime monitoring
+const startTime = Date.now();
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
+  const uptime = Date.now() - startTime;
+  res.status(200).json({ 
+    ok: true,
+    timestamp: new Date().toISOString(),
+    uptime: uptime,
+    status: 'healthy'
+  });
 });
 
 // route used by contact form frontend; we don't need authentication here
