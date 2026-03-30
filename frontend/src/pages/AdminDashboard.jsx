@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FiUsers, FiMessageCircle, FiClock } from 'react-icons/fi'
+import { FiUsers, FiClock } from 'react-icons/fi'
 import { FaChartBar } from 'react-icons/fa'
 import api from '../services/api'
 
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
               </div>
               <div className="rounded-xl bg-white shadow p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <FiMessageCircle className="text-3xl text-purple-600" />
+                  <span className="text-3xl text-purple-600">💬</span>
                   <div>
                     <h2 className="text-lg font-semibold text-slate-800">Consultations</h2>
                     <p className="text-sm text-gray-500">Total recorded consultations</p>

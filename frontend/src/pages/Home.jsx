@@ -264,7 +264,7 @@ export default function Home() {
         <div className={`w-full sm:w-96 bg-white shadow-xl flex flex-col ${mobileView === 'facts' ? 'hidden sm:flex' : 'flex'}`}>
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white">
-            <h3 className="font-bold flex items-center gap-2"><FiMessageCircle /> Healthcare ChatBot</h3>
+            <h3 className="font-bold flex items-center gap-2">💬 Healthcare ChatBot</h3>
             <p className="text-xs text-blue-100">Your AI Assistant</p>
           </div>
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiAlertTriangle, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
+import { FiAlertTriangle, FiCalendar, FiInfo } from 'react-icons/fi'
 import { FaAmbulance, FaHospital, FaShieldAlt, FaFireExtinguisher, FaHeartbeat, FaUser } from 'react-icons/fa'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -180,7 +180,7 @@ export default function Emergency() {
           <Card padding="md" shadow="md" className="glass-card">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <FiMessageCircle className="text-3xl text-white" />
+                <span className="text-3xl text-white">💬</span>
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-800 text-lg font-medical">Not sure if it's an emergency?</h3>
