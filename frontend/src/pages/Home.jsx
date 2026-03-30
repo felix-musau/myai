@@ -255,7 +255,7 @@ export default function Home() {
               to="/contact"
               className="bg-gradient-to-r from-pink-500 to-rose-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-pink-600 hover:to-rose-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              <FiPhone /> Contact & Support
+              ☎️ Contact & Support
             </Link>
           </div>
         </div>
