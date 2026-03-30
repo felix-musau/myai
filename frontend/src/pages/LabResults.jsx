@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiUpload, FiEdit2, FiAlert, FiTrendingUp } from 'react-icons/fi'
+import { FiUpload, FiEdit2, FiAlertCircle } from 'react-icons/fi'
 import { FaFlask, FaHeartbeat, FaDna } from 'react-icons/fa'
 import api from '../services/api'
 import Card from '../components/ui/Card'
@@ -279,7 +279,7 @@ export default function LabResults() {
         {/* Disclaimer */}
         <div className="mt-6 bg-yellow-50/80 backdrop-blur border border-yellow-200/50 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <FiAlert className="text-2xl text-yellow-600 flex-shrink-0" />
+            <FiAlertCircle className="text-2xl text-yellow-600 flex-shrink-0" />
             <div>
               <h4 className="font-bold text-yellow-800 font-medical">Important Notice</h4>
               <p className="text-yellow-700 text-sm mt-1 font-medical">
