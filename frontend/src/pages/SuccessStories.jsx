@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
+import { FiStar } from 'react-icons/fi'
+import { FaStar } from 'react-icons/fa'
 import api from '../services/api'
 import { AuthContext } from '../App'
 import Card from '../components/ui/Card'
@@ -70,7 +72,10 @@ export default function SuccessStories() {
       <div className="max-w-6xl mx-auto p-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical">⭐ Success Stories</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical flex items-center justify-center gap-2">
+            <FaStar className="text-yellow-400" />
+            Success Stories
+          </h1>
           <p className="text-gray-600 font-medical">Hear what our patients have to say about their experience</p>
         </div>
 

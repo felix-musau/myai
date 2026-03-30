@@ -1,5 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FiAlertTriangle, FiPhone, FiMapPin, FiMessageCircle, FiCalendar, FiInfo } from 'react-icons/fi'
+import { FaAmbulance, FaHospital, FaShieldAlt, FaFireExtinguisher, FaHeartbeat, FaUser } from 'react-icons/fa'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import emergencyData from '../data/emergency.json'
@@ -10,22 +12,22 @@ export default function Emergency() {
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')] flex flex-col relative">
       
-      {/* Emergency Banner - Brightest thin red */}
-      <div className="bg-red-300/98 backdrop-blur-sm text-white py-4 px-6 relative z-10">
+      {/* Emergency Banner - Vibrant Stop Sign Red */}
+      <div className="bg-red-600 text-white py-6 px-6 relative z-10 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">⚠️</span>
+            <FiAlertTriangle className="text-5xl animate-pulse" />
             <div>
-              <h1 className="text-2xl font-bold font-medical">Medical Emergency?</h1>
-              <p className="text-red-50">If you or someone else is in immediate danger, call for help now</p>
+              <h1 className="text-3xl font-bold font-medical">Medical Emergency?</h1>
+              <p className="text-red-100">If you or someone else is in immediate danger, call for help now</p>
             </div>
           </div>
           <div className="flex gap-3 flex-wrap">
             <a
               href={`tel:${emergencyData.emergencyNumber}`}
-              className="glass-button-primary px-6 py-3 rounded-xl font-bold text-lg flex items-center gap-2"
+              className="bg-white text-red-600 font-bold px-8 py-4 rounded-xl text-lg flex items-center gap-2 hover:bg-red-50 transition-all transform hover:scale-105 shadow-lg"
             >
-              <span className="text-2xl">📞</span>
+              <FiPhone className="text-2xl" />
               Call {emergencyData.emergencyNumber}
             </a>
           </div>
@@ -36,13 +38,15 @@ export default function Emergency() {
         {/* Emergency Instructions */}
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">📋</span>
+            <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+              <FiInfo className="text-white text-xl" />
+            </div>
             <h2 className="text-xl font-bold text-gray-800 font-medical">What to Do in an Emergency</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {emergencyData.instructions.map((instruction, index) => (
-              <div key={index} className="flex items-start gap-2 p-3 bg-red-50/95 backdrop-blur rounded-lg">
-                <span className="text-red-400 font-bold">{index + 1}.</span>
+              <div key={index} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border-l-4 border-red-600">
+                <span className="bg-red-600 text-white font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0">{index + 1}</span>
                 <span className="text-gray-700">{instruction}</span>
               </div>
             ))}
@@ -52,7 +56,9 @@ export default function Emergency() {
         {/* Emergency Symptoms */}
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">🚨</span>
+            <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+              <FaHeartbeat className="text-white text-xl" />
+            </div>
             <h2 className="text-xl font-bold text-gray-800 font-medical">Emergency Warning Signs</h2>
           </div>
           <p className="text-gray-600 mb-4 font-medical">Seek immediate medical attention if you experience any of these symptoms:</p>
@@ -60,11 +66,11 @@ export default function Emergency() {
             {emergencyData.symptoms.map((symptom) => (
               <div
                 key={symptom.id}
-                className="bg-red-50/95 backdrop-blur border border-red-300/70 rounded-xl p-4 hover:shadow-md transition"
+                className="bg-white border-2 border-red-200 rounded-xl p-4 hover:shadow-lg hover:border-red-600 transition-all transform hover:scale-105"
               >
-                <span className="text-3xl block mb-2">{symptom.icon}</span>
-                <h3 className="font-bold text-red-500 font-medical">{symptom.title}</h3>
-                <p className="text-sm text-red-400 mt-1">{symptom.description}</p>
+                <div className="text-4xl mb-3">{symptom.icon}</div>
+                <h3 className="font-bold text-red-600 font-medical">{symptom.title}</h3>
+                <p className="text-sm text-gray-700 mt-1">{symptom.description}</p>
               </div>
             ))}
           </div>
@@ -73,49 +79,51 @@ export default function Emergency() {
         {/* Kenyan Emergency Numbers */}
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">🇰🇪</span>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <FiPhone className="text-white text-xl" />
+            </div>
             <h2 className="text-xl font-bold text-gray-800 font-medical">Kenya Emergency Numbers</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <a
               href={`tel:${emergencyData.kenyanEmergency.police}`}
-              className="bg-blue-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-blue-600 text-white rounded-xl p-4 hover:shadow-lg transition-all transform hover:scale-105"
             >
-              <span className="text-2xl block mb-1">👮</span>
-              <span className="font-bold">Police</span>
-              <span className="block text-lg">{emergencyData.kenyanEmergency.police}</span>
+              <FaShieldAlt className="text-3xl mb-2" />
+              <span className="font-bold block">Police</span>
+              <span className="block text-sm mt-1">{emergencyData.kenyanEmergency.police}</span>
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.ambulance}`}
-              className="bg-red-300/95 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-red-600 text-white rounded-xl p-4 hover:shadow-lg transition-all transform hover:scale-105"
             >
-              <span className="text-2xl block mb-1">🚑</span>
-              <span className="font-bold">Ambulance</span>
-              <span className="block text-lg">{emergencyData.kenyanEmergency.ambulance}</span>
+              <FaAmbulance className="text-3xl mb-2" />
+              <span className="font-bold block">Ambulance</span>
+              <span className="block text-sm mt-1">{emergencyData.kenyanEmergency.ambulance}</span>
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.fire}`}
-              className="bg-orange-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-orange-600 text-white rounded-xl p-4 hover:shadow-lg transition-all transform hover:scale-105"
             >
-              <span className="text-2xl block mb-1">🔥</span>
-              <span className="font-bold">Fire</span>
-              <span className="block text-lg">{emergencyData.kenyanEmergency.fire}</span>
+              <FaFireExtinguisher className="text-3xl mb-2" />
+              <span className="font-bold block">Fire</span>
+              <span className="block text-sm mt-1">{emergencyData.kenyanEmergency.fire}</span>
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.redCross}`}
-              className="bg-red-400/98 backdrop-blur text bg-red-500 rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-red-700 text-white rounded-xl p-4 hover:shadow-lg transition-all transform hover:scale-105"
             >
-              <span className="text-2xl block mb-1">🟥</span>
-              <span className="font-bold">Red Cross</span>
-              <span className="block text-lg">{emergencyData.kenyanEmergency.redCross}</span>
+              <FaHeartbeat className="text-3xl mb-2" />
+              <span className="font-bold block">Red Cross</span>
+              <span className="block text-sm mt-1">{emergencyData.kenyanEmergency.redCross}</span>
             </a>
             <a
               href={`tel:${emergencyData.kenyanEmergency.generalEmergency}`}
-              className="bg-green-600/80 backdrop-blur text-white rounded-xl p-4 hover:shadow-md transition text-center"
+              className="bg-green-600 text-white rounded-xl p-4 hover:shadow-lg transition-all transform hover:scale-105"
             >
-              <span className="text-2xl block mb-1">⚡</span>
-              <span className="font-bold">General</span>
-              <span className="block text-lg">{emergencyData.kenyanEmergency.generalEmergency}</span>
+              <FaHospital className="text-3xl mb-2" />
+              <span className="font-bold block">General</span>
+              <span className="block text-sm mt-1">{emergencyData.kenyanEmergency.generalEmergency}</span>
             </a>
           </div>
         </Card>
@@ -123,30 +131,41 @@ export default function Emergency() {
         {/* Kenyan Hospitals */}
         <Card padding="md" shadow="md" className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">🏥</span>
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              <FaHospital className="text-white text-xl" />
+            </div>
             <h2 className="text-xl font-bold text-gray-800 font-medical">Major Kenya Hospitals</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {emergencyData.kenyanHospitals.map((hospital) => (
               <div
                 key={hospital.id}
-                className="bg-white/60 backdrop-blur border border-gray-200/50 rounded-xl p-4 hover:shadow-md transition"
+                className="bg-white border border-gray-300 rounded-xl p-4 hover:shadow-lg transition-all"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-gray-800 font-medical">{hospital.name}</h3>
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-gray-800 font-medical flex-1">{hospital.name}</h3>
                   {hospital.open24Hours && (
-                    <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
+                    <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
                       24/7
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600 text-sm mb-1">📍 {hospital.address}</p>
-                <p className="text-gray-600 text-sm mb-1">📞 {hospital.phone}</p>
-                <p className="text-gray-500 text-xs mb-3">🏷️ {hospital.type}</p>
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex items-start gap-2 text-gray-600">
+                    <FiMapPin className="text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span>{hospital.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <FiPhone className="text-blue-600" />
+                    <span>{hospital.phone}</span>
+                  </div>
+                  <div className="text-gray-500 text-xs">Type: {hospital.type}</div>
+                </div>
                 <Button
                   variant="glassPrimary"
                   size="sm"
                   onClick={() => window.location.href = `tel:${hospital.phone}`}
+                  className="w-full"
                 >
                   Call Now
                 </Button>
@@ -160,8 +179,8 @@ export default function Emergency() {
           {/* Chat with AI Assistant */}
           <Card padding="md" shadow="md" className="glass-card">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-600/80 backdrop-blur rounded-full flex items-center justify-center">
-                <span className="text-3xl">🤖</span>
+              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <FiMessageCircle className="text-3xl text-white" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-800 text-lg font-medical">Not sure if it's an emergency?</h3>
@@ -173,7 +192,6 @@ export default function Emergency() {
                   size="sm"
                   className="mt-3"
                   onClick={() => navigate('/home')}
-                  icon="💬"
                 >
                   Start Chat
                 </Button>
@@ -184,8 +202,8 @@ export default function Emergency() {
           {/* Request Non-Emergency Doctor */}
           <Card padding="md" shadow="md" className="glass-card">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-green-600/80 backdrop-blur rounded-full flex items-center justify-center">
-                <span className="text-3xl">👨‍⚕️</span>
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <FiCalendar className="text-3xl text-white" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-800 text-lg font-medical">Need a Doctor Soon?</h3>
@@ -197,7 +215,6 @@ export default function Emergency() {
                   size="sm"
                   className="mt-3"
                   onClick={() => navigate('/request-doctor')}
-                  icon="📅"
                 >
                   Request Appointment
                 </Button>
@@ -207,12 +224,14 @@ export default function Emergency() {
         </div>
 
         {/* Disclaimer */}
-        <div className="bg-yellow-50/80 backdrop-blur border border-yellow-200/50 rounded-xl p-4">
+        <div className="bg-yellow-50 border-2 border-yellow-600 rounded-xl p-4 shadow-md">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">⚡</span>
+            <div className="flex-shrink-0 mt-1">
+              <FiAlertTriangle className="text-yellow-600 text-2xl" />
+            </div>
             <div>
               <h4 className="font-bold text-yellow-800 font-medical">Important Disclaimer</h4>
-              <p className="text-yellow-700 text-sm mt-1">
+              <p className="text-yellow-800 text-sm mt-1">
                 This information is for general guidance only. If you believe you're experiencing a medical emergency, 
                 call {emergencyData.emergencyNumber} or go to your nearest emergency room immediately. 
                 Do not delay seeking emergency care based on this information.

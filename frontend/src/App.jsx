@@ -46,7 +46,6 @@ import FAQ from './pages/FAQ'
 import LabResults from './pages/LabResults'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
-import Chat from './pages/Chat'
 import VerifyEmail from './pages/VerifyEmail'
 import MedicalNews from './pages/MedicalNews'
 import Hospitals from './pages/Hospitals'
@@ -134,7 +133,6 @@ navigate('/login', { replace: true })
   const navLinks = [
     { href: '/home', label: 'Home' },
     { href: '/hospitals', label: 'Map' },
-    { href: '/chat', label: 'Chat' },
     { href: '/medical-news', label: 'News' },
     { href: '/success-stories', label: 'Reviews' },
     { href: '/lab-results', label: 'Labs' },
@@ -1100,7 +1098,6 @@ export default function App() {
           <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
           <Route path="/lab-results" element={<ProtectedRoute><LabResults /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/medical-news" element={<ProtectedRoute><MedicalNews /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={user ? "/home" : "/login"} replace />} />

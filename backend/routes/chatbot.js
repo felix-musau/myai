@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const authMiddleware = require('../middleware/auth');
+const { getConsultations, saveConsultations, getNextId } = require('../db');
 
 // Groq AI configuration
 const GROQ_KEY = process.env.GROQ_API_KEY;
@@ -192,6 +193,26 @@ router.post('/message', authMiddleware, async (req, res) => {
 
     history.push({ role: 'assistant', content: botReply });
     conversations[userKey] = history;
+
+    // Save consultation to persistent storage
+    try {
+      const consultations = getConsultations();
+      const id = getNextId(consultations);
+      const consultation = {
+        id,
+        user_id: req.user?.id,
+        username: req.user?.username,
+        message: message,
+        reply: botReply,
+        created_at: new Date().toISOString()
+      };
+      consultations.unshift(consultation);
+      saveConsultations(consultations);
+      console.log('Consultation saved for user', req.user?.username);
+    } catch (err) {
+      console.error('Failed to save consultation:', err);
+      // Continue anyway - don't fail the chat if saving fails
+    }
 
     return res.json({ reply: botReply });
   } catch (err) {

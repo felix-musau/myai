@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { FaHospital } from 'react-icons/fa'
 import { useAuth } from '../App'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -31,7 +32,7 @@ export default function MedicalNews() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className="bg-white shadow-md px-4 py-3 flex justify-between items-center z-10">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🏥</span>
+            <FaHospital className="text-2xl text-blue-600" />
             <h1 className="text-xl font-bold text-gray-800">Medical News</h1>
           </div>
         </header>

@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FiUser } from 'react-icons/fi'
 import { AuthContext } from '../App'
 import api from '../services/api'
 
@@ -56,7 +57,7 @@ export default function Profile() {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">👤</span>
+          <FiUser className="text-2xl text-blue-600" />
           <h2 className="text-xl font-bold">My Profile</h2>
         </div>
         <p className="mb-2"><strong>Username:</strong> {user?.username}</p>

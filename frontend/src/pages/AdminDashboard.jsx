@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { FiUsers, FiMessageCircle, FiPhone, FiMapPin, FiClock } from 'react-icons/fi'
+import { FaChartBar } from 'react-icons/fa'
 import api from '../services/api'
 
 function formatDate(dateString) {
@@ -101,25 +103,43 @@ export default function AdminDashboard() {
           <>
             <section className="grid gap-6 lg:grid-cols-3">
               <div className="rounded-xl bg-white shadow p-6">
-                <h2 className="text-lg font-semibold text-slate-800">Active Users</h2>
-                <p className="text-sm text-gray-500 mt-1">Total registered users</p>
-                <div className="mt-4 text-4xl font-bold text-blue-600">{users.length}</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <FiUsers className="text-3xl text-blue-600" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-800">Active Users</h2>
+                    <p className="text-sm text-gray-500">Total registered users</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-blue-600">{users.length}</div>
               </div>
               <div className="rounded-xl bg-white shadow p-6">
-                <h2 className="text-lg font-semibold text-slate-800">Consultations</h2>
-                <p className="text-sm text-gray-500 mt-1">Total recorded consultations</p>
-                <div className="mt-4 text-4xl font-bold text-blue-600">{consultations.length}</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <FiMessageCircle className="text-3xl text-purple-600" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-800">Consultations</h2>
+                    <p className="text-sm text-gray-500">Total recorded consultations</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-purple-600">{consultations.length}</div>
               </div>
               <div className="rounded-xl bg-white shadow p-6">
-                <h2 className="text-lg font-semibold text-slate-800">Doctor Requests</h2>
-                <p className="text-sm text-gray-500 mt-1">Total requests submitted</p>
-                <div className="mt-4 text-4xl font-bold text-blue-600">{requests.length}</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <FiPhone className="text-3xl text-green-600" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-800">Doctor Requests</h2>
+                    <p className="text-sm text-gray-500">Total requests submitted</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-green-600">{requests.length}</div>
               </div>
             </section>
 
             <section className="grid gap-6 lg:grid-cols-2">
               <div className="rounded-xl bg-white shadow p-6">
-                <h2 className="text-lg font-semibold text-slate-800 mb-4">Activity Metrics (last 7 days)</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  <FaChartBar className="text-2xl text-orange-600" />
+                  <h2 className="text-lg font-semibold text-slate-800">Activity Metrics (last 7 days)</h2>
+                </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <SmallBarChart data={(metrics?.signups || [])} label="User Signups" />
                   <SmallBarChart data={(metrics?.consultations || [])} label="Consultations" />
@@ -128,58 +148,87 @@ export default function AdminDashboard() {
               </div>
 
               <div className="rounded-xl bg-white shadow p-6">
-                <h2 className="text-lg font-semibold text-slate-800 mb-4">Upcoming Requests</h2>
-                {requests.length === 0 ? (
-                  <p className="text-gray-500">No doctor requests yet.</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <FiUsers className="text-2xl text-blue-600" />
+                  <h2 className="text-lg font-semibold text-slate-800">Consultation Summary by User</h2>
+                </div>
+                {consultations.length === 0 ? (
+                  <p className="text-gray-500">No consultations yet.</p>
                 ) : (
-                  <div className="space-y-3">
-                    {requests.slice(0, 6).map((req) => (
-                      <div key={req.id} className="rounded-lg border border-slate-200 p-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-semibold text-slate-800">{req.full_name || req.email}</div>
-                            <div className="text-xs text-gray-500">{req.urgency || 'Normal'}</div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {(() => {
+                      const consultationsByUser = {}
+                      consultations.forEach((c) => {
+                        const username = c.username || 'Unknown'
+                        if (!consultationsByUser[username]) {
+                          consultationsByUser[username] = { count: 0, user_id: c.user_id }
+                        }
+                        consultationsByUser[username].count++
+                      })
+                      
+                      return Object.entries(consultationsByUser)
+                        .sort(([, a], [, b]) => b.count - a.count)
+                        .slice(0, 8)
+                        .map(([username, data]) => (
+                          <div key={username} className="flex items-center justify-between p-2 rounded hover:bg-slate-50 transition">
+                            <div>
+                              <div className="text-sm font-semibold text-slate-700">{username}</div>
+                              <div className="text-xs text-gray-500">User ID: {data.user_id || 'N/A'}</div>
+                            </div>
+                            <div className="bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full">
+                              {data.count} chat{data.count !== 1 ? 's' : ''}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">{new Date(req.created_at).toLocaleDateString()}</div>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-600">{req.symptoms}</p>
-                      </div>
-                    ))}
-                    {requests.length > 6 && (
-                      <div className="text-sm text-blue-600">Showing latest 6 requests.</div>
-                    )}
+                        ))
+                    })()}
                   </div>
                 )}
               </div>
             </section>
 
             <section className="rounded-xl bg-white shadow p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Users</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Username</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Email</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Role</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Joined</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-100">
-                    {users.slice(0, 10).map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-4 py-3 text-sm text-slate-700">{user.username}</td>
-                        <td className="px-4 py-3 text-sm text-slate-700">{user.email}</td>
-                        <td className="px-4 py-3 text-sm text-slate-700 capitalize">{user.isAdmin ? 'admin' : 'user'}</td>
-                        <td className="px-4 py-3 text-sm text-slate-700">{formatDate(user.created_at)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {users.length > 10 && (
-                  <div className="mt-2 text-sm text-gray-500">Showing latest 10 users.</div>
-                )}
+              <div className="flex items-center gap-3 mb-4">
+                <FiPhone className="text-2xl text-red-600" />
+                <h2 className="text-lg font-semibold text-slate-800">All Doctor Requests</h2>
               </div>
+              {requests.length === 0 ? (
+                <p className="text-gray-500">No doctor requests submitted yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {requests.slice(0, 15).map((req) => (
+                    <div key={req.id} className="rounded-lg border border-slate-200 p-4 hover:bg-slate-50 transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-slate-800">{req.full_name || 'N/A'}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            📧 {req.email} | 📱 {req.phone}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            🏥 Specialty: {req.specialty || 'Not specified'} | Urgency: <span className={`font-semibold ${
+                              req.urgency === 'High' ? 'text-red-600' :
+                              req.urgency === 'Medium' ? 'text-yellow-600' :
+                              'text-green-600'
+                            }`}>{req.urgency || 'Normal'}</span>
+                          </div>
+                          <div className="text-xs text-gray-600 mt-2 bg-blue-50 p-2 rounded border-l-2 border-blue-500">
+                            <strong>Symptoms:</strong> {req.symptoms}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-2">
+                            📅 Preferred: {req.preferred_date} at {req.preferred_time}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-400">{new Date(req.created_at).toLocaleDateString()}</div>
+                          <div className="text-xs text-gray-400">{new Date(req.created_at).toLocaleTimeString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {requests.length > 15 && (
+                    <div className="text-sm text-blue-600 text-center py-2">Showing latest 15 of {requests.length} requests.</div>
+                  )}
+                </div>
+              )}
             </section>
           </>
         )}

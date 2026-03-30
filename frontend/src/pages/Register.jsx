@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { FaHospital } from 'react-icons/fa'
 import { useAuth } from '../App'
 import api from '../services/api'
 
@@ -56,7 +57,7 @@ export default function Register() {
         {/* Logo & Title */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full shadow-lg mb-4">
-            <span className="text-4xl">🏥</span>
+            <FaHospital className="text-4xl text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800">MyAI Healthcare</h1>
           <p className="text-gray-600 mt-2">Create your account</p>

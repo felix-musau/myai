@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import { FiDownload, FiHome, FiLogOut, FiChevronLeft } from 'react-icons/fi'
+import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 
 export default function History() {
@@ -9,6 +11,7 @@ export default function History() {
   const [consultations, setConsultations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     fetchHistory()
@@ -16,14 +19,10 @@ export default function History() {
 
   const fetchHistory = async () => {
     try {
-      try {
-        const res = await api.get('/consultations')
-        setConsultations(res.data.consultations || [])
-      } catch (err) {
-        // fall back to empty
-        setConsultations([])
-      }
+      const res = await api.get('/consultations')
+      setConsultations(res.data.consultations || [])
     } catch (err) {
+      console.error('Failed to load history:', err)
       setError('Failed to load history')
     } finally {
       setLoading(false)
@@ -35,6 +34,29 @@ export default function History() {
     navigate('/login', { replace: true })
   }
 
+  const downloadHistory = async (format) => {
+    try {
+      setDownloading(true)
+      const response = await api.get(`/consultations/download/${format}`, {
+        responseType: format === 'csv' ? 'blob' : 'json'
+      })
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `consultation-history-${new Date().toISOString().split('T')[0]}.${format}`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download error:', err)
+      alert('Failed to download history')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-[url('/ai.jpg')] flex flex-col relative">
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -42,7 +64,7 @@ export default function History() {
       <header className="bg-white shadow-md px-4 py-3 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80">
-            <span className="text-2xl">🏥</span>
+            <FaHospital className="text-2xl text-blue-600" />
             <h1 className="text-xl font-bold text-gray-800">MyAI Healthcare</h1>
           </Link>
         </div>
@@ -68,10 +90,32 @@ export default function History() {
         <div className="max-w-4xl mx-auto">
           {/* Page Title */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-              📋 Consultation History
-            </h2>
-            <p className="text-gray-600 mt-2">View your past consultations and diagnoses</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                  📋 Consultation History
+                </h2>
+                <p className="text-gray-600 mt-2">View your past consultations and chat messages</p>
+              </div>
+              {consultations.length > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => downloadHistory('csv')}
+                    disabled={downloading}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors text-sm font-medium flex items-center gap-2"
+                  >
+                    <FiDownload /> CSV
+                  </button>
+                  <button
+                    onClick={() => downloadHistory('json')}
+                    disabled={downloading}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium flex items-center gap-2"
+                  >
+                    <FiDownload /> JSON
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* History List */}
@@ -105,25 +149,20 @@ export default function History() {
               <div className="divide-y">
                 {consultations.map((consultation, idx) => (
                   <div key={idx} className="p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold text-gray-800">{consultation.predicted_disease}</h4>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Symptoms: {consultation.symptoms}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="bg-blue-50 border-l-4 border-blue-600 p-3 rounded-r mb-3">
+                          <p className="text-sm font-medium text-gray-700">You asked:</p>
+                          <p className="text-sm text-gray-800 mt-1">{consultation.message}</p>
+                        </div>
+                        <div className="bg-green-50 border-l-4 border-green-600 p-3 rounded-r">
+                          <p className="text-sm font-medium text-gray-700">MyAI replied:</p>
+                          <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap">{consultation.reply}</p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3">
                           {new Date(consultation.created_at).toLocaleDateString()} at{' '}
                           {new Date(consultation.created_at).toLocaleTimeString()}
                         </p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          consultation.confidence > 0.8 ? 'bg-green-100 text-green-700' :
-                          consultation.confidence > 0.5 ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {Math.round(consultation.confidence * 100)}% confidence
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -136,9 +175,9 @@ export default function History() {
           <div className="mt-6">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors"
+              className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors font-medium"
             >
-              ← Back to Home
+              <FiChevronLeft /> Back to Home
             </Link>
           </div>
         </div>

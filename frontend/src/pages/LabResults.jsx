@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { FiUpload, FiEdit2, FiAlert, FiTrendingUp } from 'react-icons/fi'
+import { FaFlask, FaHeartbeat, FaDna } from 'react-icons/fa'
 import api from '../services/api'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -8,7 +10,7 @@ const testTypes = [
   { 
     id: 'blood-glucose', 
     name: 'Blood Glucose', 
-    icon: '🩸',
+    icon: FaHeartbeat,
     fields: [
       { name: 'glucose', label: 'Glucose (mg/dL)', min: 0, max: 500, normal: '70-100' }
     ]
@@ -16,7 +18,7 @@ const testTypes = [
   { 
     id: 'lipid-panel', 
     name: 'Lipid Panel', 
-    icon: '❤️',
+    icon: FaHeartbeat,
     fields: [
       { name: 'totalCholesterol', label: 'Total Cholesterol (mg/dL)', min: 0, max: 400, normal: '<200' },
       { name: 'ldl', label: 'LDL Cholesterol (mg/dL)', min: 0, max: 300, normal: '<100' },
@@ -27,7 +29,7 @@ const testTypes = [
   { 
     id: 'cbc', 
     name: 'Complete Blood Count (CBC)', 
-    icon: '🧬',
+    icon: FaDna,
     fields: [
       { name: 'hemoglobin', label: 'Hemoglobin (g/dL)', min: 0, max: 25, normal: '12-17' },
       { name: 'wbc', label: 'White Blood Cells (K/uL)', min: 0, max: 50, normal: '4-11' },
@@ -128,7 +130,10 @@ export default function LabResults() {
       <div className="max-w-4xl mx-auto p-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical">🧪 Lab & Test Results</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical flex items-center justify-center gap-2">
+            <FaFlask className="text-blue-600" />
+            Lab & Test Results
+          </h1>
           <p className="text-gray-600 font-medical">Upload or enter your lab results for analysis</p>
         </div>
 
@@ -137,25 +142,28 @@ export default function LabResults() {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2 font-medical">Select Test Type *</label>
             <div className="grid md:grid-cols-3 gap-3">
-              {testTypes.map((test) => (
-                <button
-                  key={test.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedTest(test.id)
-                    setValues({})
-                    setErrors({})
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all font-medical ${
-                    selectedTest === test.id
-                      ? 'border-blue-500 bg-blue-50/80 backdrop-blur'
-                      : 'border-gray-200/50 bg-white/40 backdrop-blur hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-3xl block mb-2">{test.icon}</span>
-                  <span className="font-semibold text-gray-800">{test.name}</span>
-                </button>
-              ))}
+              {testTypes.map((test) => {
+                const IconComponent = test.icon
+                return (
+                  <button
+                    key={test.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTest(test.id)
+                      setValues({})
+                      setErrors({})
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all font-medical ${
+                      selectedTest === test.id
+                        ? 'border-blue-500 bg-blue-50/80 backdrop-blur'
+                        : 'border-gray-200/50 bg-white/40 backdrop-blur hover:border-gray-300'
+                    }`}
+                  >
+                    <IconComponent className="text-3xl block mb-2 text-blue-600" />
+                    <span className="font-semibold text-gray-800">{test.name}</span>
+                  </button>
+                )
+              })}
             </div>
             {errors.testType && <p className="text-red-500 text-sm mt-2">{errors.testType}</p>}
           </div>
@@ -166,23 +174,23 @@ export default function LabResults() {
               <div className="flex border-b border-gray-200/50 mb-6">
                 <button
                   onClick={() => setActiveTab('upload')}
-                  className={`px-6 py-3 font-medium transition font-medical ${
+                  className={`px-6 py-3 font-medium transition font-medical flex items-center gap-2 ${
                     activeTab === 'upload'
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  📁 Upload File
+                  <FiUpload /> Upload File
                 </button>
                 <button
                   onClick={() => setActiveTab('manual')}
-                  className={`px-6 py-3 font-medium transition font-medical ${
+                  className={`px-6 py-3 font-medium transition font-medical flex items-center gap-2 ${
                     activeTab === 'manual'
                       ? 'text-blue-600 border-b-2 border-blue-600'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  ✏️ Enter Values
+                  <FiEdit2 /> Enter Values
                 </button>
               </div>
 
@@ -199,7 +207,7 @@ export default function LabResults() {
                         className="hidden"
                       />
                       <label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="text-5xl block mb-4">📤</span>
+                        <FiUpload className="text-5xl block mb-4 mx-auto text-blue-500" />
                         <p className="text-gray-700 font-medium font-medical">
                           {fileName ? fileName : 'Click to upload your lab results'}
                         </p>
@@ -252,7 +260,6 @@ export default function LabResults() {
                     loading={loading}
                     disabled={!selectedTest}
                     className="flex-1"
-                    icon="🔬"
                   >
                     Analyze Results
                   </Button>
@@ -272,7 +279,7 @@ export default function LabResults() {
         {/* Disclaimer */}
         <div className="mt-6 bg-yellow-50/80 backdrop-blur border border-yellow-200/50 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">⚠️</span>
+            <FiAlert className="text-2xl text-yellow-600 flex-shrink-0" />
             <div>
               <h4 className="font-bold text-yellow-800 font-medical">Important Notice</h4>
               <p className="text-yellow-700 text-sm mt-1 font-medical">
@@ -288,7 +295,7 @@ export default function LabResults() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title="📊 Analysis Results"
+        title="Analysis Results"
         size="lg"
       >
         {results && (

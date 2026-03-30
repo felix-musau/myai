@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
+import { FiLightbulb, FiMessageCircle, FiLogOut, FiHistory, FiMapPin, FiPhone, FiRefreshCw } from 'react-icons/fi'
+import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 
 // Body facts for the facts panel
@@ -178,7 +180,7 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white shadow-md px-4 py-3 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🏥</span>
+          <FaHospital className="text-2xl text-blue-600" />
           <h1 className="text-xl font-bold text-gray-800">MyAI Healthcare</h1>
         </div>
         <div className="flex items-center gap-4">
@@ -196,15 +198,15 @@ export default function Home() {
       <div className="sm:hidden flex border-b bg-white">
         <button
           onClick={() => setMobileView('facts')}
-          className={`flex-1 py-3 text-center font-medium ${mobileView === 'facts' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+          className={`flex-1 py-3 text-center font-medium flex items-center justify-center gap-2 ${mobileView === 'facts' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          💡 Facts
+          <FiLightbulb /> Facts
         </button>
         <button
           onClick={() => setMobileView('chat')}
-          className={`flex-1 py-3 text-center font-medium ${mobileView === 'chat' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+          className={`flex-1 py-3 text-center font-medium flex items-center justify-center gap-2 ${mobileView === 'chat' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          💬 Chat
+          <FiMessageCircle /> Chat
         </button>
       </div>
 
@@ -214,9 +216,9 @@ export default function Home() {
         {/* Facts Panel - Major Part */}
         <div className={`flex-1 p-4 sm:p-6 overflow-y-auto ${mobileView === 'chat' ? 'hidden sm:block' : 'block'}`}>
           {/* Disclaimer */}
-          <div className="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4 mb-6">
-            <p className="text-sm text-amber-800">
-              <strong>⚠️ MEDICAL DISCLAIMER:</strong> MyAI is an informational tool only. It is <strong>NOT</strong> a substitute for professional medical diagnosis or treatment. Always consult qualified healthcare professionals.
+          <div className="bg-amber-100 border-l-4 border-amber-600 rounded-lg p-4 mb-6">
+            <p className="text-sm text-amber-900 font-medium">
+              <strong>⚠️ Medical Disclaimer:</strong> MyAI is an informational tool only. It is <strong>NOT</strong> a substitute for professional medical diagnosis or treatment. Always consult qualified healthcare professionals.
             </p>
           </div>
 
@@ -224,7 +226,7 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
               <h2 className="text-white text-xl font-bold flex items-center gap-2">
-                💡 Did You Know?
+                <FiLightbulb className="text-2xl" /> Did You Know?
               </h2>
             </div>
             <div className="p-6">
@@ -240,21 +242,21 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link
               to="/history"
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-purple-600 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg"
+              className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-purple-600 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              📋 View History
+              <FiHistory /> View History
             </Link>
             <Link
               to="/hospitals"
-              className="bg-gradient-to-r from-green-500 to-teal-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-green-600 hover:to-teal-700 transition-all transform hover:scale-[1.02] shadow-lg"
+              className="bg-gradient-to-r from-green-500 to-teal-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-green-600 hover:to-teal-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              🏨 Find Hospitals
+              <FiMapPin /> Find Hospitals
             </Link>
             <Link
               to="/contact"
-              className="bg-gradient-to-r from-pink-500 to-rose-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-pink-600 hover:to-rose-700 transition-all transform hover:scale-[1.02] shadow-lg"
+              className="bg-gradient-to-r from-pink-500 to-rose-600 text-white py-4 px-6 rounded-xl font-semibold text-center hover:from-pink-600 hover:to-rose-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
             >
-              📞 Contact & Support
+              <FiPhone /> Contact & Support
             </Link>
           </div>
         </div>
@@ -263,7 +265,7 @@ export default function Home() {
         <div className={`w-full sm:w-96 bg-white shadow-xl flex flex-col ${mobileView === 'facts' ? 'hidden sm:flex' : 'flex'}`}>
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white">
-            <h3 className="font-bold">💬 Healthcare ChatBot</h3>
+            <h3 className="font-bold flex items-center gap-2"><FiMessageCircle /> Healthcare ChatBot</h3>
             <p className="text-xs text-blue-100">Your AI Assistant</p>
           </div>
 
@@ -316,16 +318,16 @@ export default function Home() {
               <button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
-                ➤
+                <span>Send</span>
               </button>
             </div>
             <button
               onClick={resetChat}
-              className="w-full mt-2 text-sm text-orange-600 hover:text-orange-800 font-medium"
+              className="w-full mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-1"
             >
-              🔄 Reset Chat
+              <FiRefreshCw /> Reset Chat
             </button>
           </div>
         </div>

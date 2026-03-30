@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { FiUser, FiMail, FiPhone, FiFileText, FiCalendar, FiClock, FiAlert, FiStethoscope, FiCheckCircle, FiX } from 'react-icons/fi'
+import { FaHospital } from 'react-icons/fa'
 import api from '../services/api'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -87,7 +89,10 @@ export default function RequestDoctor() {
       <div className="max-w-4xl mx-auto p-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical">🏥 Request a Doctor</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-medical flex items-center justify-center gap-2">
+            <FaHospital className="text-blue-600" />
+            Request a Doctor
+          </h1>
           <p className="text-gray-600 font-medical">Schedule a consultation with our healthcare professionals</p>
         </div>
 
@@ -262,7 +267,6 @@ export default function RequestDoctor() {
                 loading={loading}
                 className="w-full"
                 size="lg"
-                icon="📅"
               >
                 Request Consultation
               </Button>
@@ -275,18 +279,21 @@ export default function RequestDoctor() {
       <Modal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        title="✅ Request Submitted Successfully!"
+        title="Request Submitted Successfully!"
         size="md"
       >
         {successData && (
           <div className="space-y-4">
-            <div className="bg-blue-50/80 backdrop-blur p-4 rounded-lg">
-              <p className="text-sm text-blue-800 font-medical">
-                <strong>Request ID:</strong> {successData.requestId}
-              </p>
-              <p className="text-sm text-blue-800 mt-1 font-medical">
-                <strong>Estimated Response:</strong> {successData.estimatedResponseTime}
-              </p>
+            <div className="bg-green-50/80 backdrop-blur p-4 rounded-lg border border-green-200 flex items-start gap-3">
+              <FiCheckCircle className="text-green-600 text-xl flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-green-800 font-medical">
+                  <strong>Request ID:</strong> {successData.requestId}
+                </p>
+                <p className="text-sm text-green-800 mt-1 font-medical">
+                  <strong>Estimated Response:</strong> {successData.estimatedResponseTime}
+                </p>
+              </div>
             </div>
             
             <div>
@@ -294,7 +301,7 @@ export default function RequestDoctor() {
               <ul className="space-y-2">
                 {successData.nextSteps?.map((step, index) => (
                   <li key={index} className="flex items-start gap-2 text-gray-600 font-medical">
-                    <span className="text-blue-500 mt-1">✓</span>
+                    <FiCheckCircle className="text-green-600 mt-0.5 flex-shrink-0" />
                     {step}
                   </li>
                 ))}

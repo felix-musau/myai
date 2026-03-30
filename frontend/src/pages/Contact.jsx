@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { FiHome, FiMail, FiPhone, FiClock, FiChevronLeft } from 'react-icons/fi'
+import { FaHospital } from 'react-icons/fa'
 import { useAuth } from '../App'
 import api from '../services/api'
 
@@ -39,7 +41,7 @@ export default function Contact() {
       <header className="bg-white shadow-md px-4 py-3 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80">
-            <span className="text-2xl">🏥</span>
+            <FaHospital className="text-2xl text-blue-600" />
             <h1 className="text-xl font-bold text-gray-800">MyAI Healthcare</h1>
           </Link>
         </div>
@@ -51,7 +53,7 @@ export default function Contact() {
         </div>
       </header>
 
-      {/* Navigation Breadcrumb */}
+        {/* Navigation Breadcrumb */}
       <div className="bg-white border-b px-4 py-2">
         <div className="flex items-center gap-2 text-sm">
           <Link to="/" className="text-blue-600 hover:underline">Home</Link>
@@ -66,7 +68,8 @@ export default function Contact() {
           {/* Page Title */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-              📞 Contact & Support
+              <FiPhone className="text-blue-600 text-2xl" />
+              Contact & Support
             </h2>
             <p className="text-gray-600 mt-2">Get in touch with our team</p>
           </div>
@@ -79,8 +82,9 @@ export default function Contact() {
 
             <div className="p-6">
               {status === 'success' && (
-                <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                  <p className="text-green-700">✅ Thank you! Your message has been received.</p>
+                <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start gap-3">
+                  <div className="text-green-600 text-xl flex-shrink-0">✓</div>
+                  <p className="text-green-700">Thank you! Your message has been received.</p>
                 </div>
               )}
 
@@ -138,21 +142,21 @@ export default function Contact() {
             <h3 className="font-bold text-gray-800 mb-4">Other Ways to Reach Us</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📧</span>
+                <FiMail className="text-2xl text-blue-600 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-700">Email</p>
                   <p className="text-gray-600">support@myai-healthcare.com</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📱</span>
+                <FiPhone className="text-2xl text-green-600 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-700">Phone</p>
                   <p className="text-gray-600">1-800-MYAI-HEALTH</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🕐</span>
+                <FiClock className="text-2xl text-orange-600 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-700">Hours</p>
                   <p className="text-gray-600">Mon-Fri: 9AM - 6PM EST</p>
@@ -167,7 +171,7 @@ export default function Contact() {
               to="/"
               className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors"
             >
-              ← Back to Home
+              <FiChevronLeft /> Back to Home
             </Link>
           </div>
         </div>
