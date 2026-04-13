@@ -18,7 +18,7 @@ router.post('/request-doctor', authMiddleware, async (req, res) => {
   } = req.body
 
   try {
-    const requests = getDoctorRequests()
+    const requests = await getDoctorRequests()
     const id = getNextId(requests)
     const request = {
       id,
@@ -35,7 +35,7 @@ router.post('/request-doctor', authMiddleware, async (req, res) => {
     }
 
     requests.unshift(request)
-    saveDoctorRequests(requests)
+    await saveDoctorRequests(requests)
 
     const requestId = `REQ-${id}`
 

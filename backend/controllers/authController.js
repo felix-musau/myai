@@ -149,7 +149,7 @@ async function register(req, res) {
       return res.status(400).json({ error: 'All fields required' })
     }
 
-    const users = getUsers()
+    const users = await getUsers()
     const existing = users.find((u) => u.username === username || u.email === email)
     if (existing) {
       console.log('⚠️ Registration blocked, user exists')
@@ -176,7 +176,7 @@ async function register(req, res) {
     }
 
     users.push(newUser)
-    saveUsers(users)
+    await saveUsers(users)
 
     if (requireVerification) {
       try {
@@ -221,7 +221,7 @@ async function login(req, res) {
       return res.status(400).json({ error: 'Username/Email and password are required' })
     }
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.username === identifier || u.email === identifier)
 
     if (!user) {
@@ -300,7 +300,7 @@ async function forgotPassword(req, res) {
     const { email } = req.body
     if (!email) return res.status(400).json({ error: 'Email is required' })
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.email === email)
     if (!user) {
       // Always return success to avoid leaking which emails exist
@@ -311,7 +311,7 @@ async function forgotPassword(req, res) {
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
     user.password_reset_token = token
     user.password_reset_expires = expiresAt
-    saveUsers(users)
+    await saveUsers(users)
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
     try {
@@ -336,7 +336,7 @@ async function resetPassword(req, res) {
       return res.status(400).json({ error: 'Token and new password are required' })
     }
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.password_reset_token === token)
     if (!user || !user.password_reset_expires || new Date(user.password_reset_expires) < new Date()) {
       return res.status(400).json({ error: 'Reset token is invalid or expired' })
@@ -348,7 +348,7 @@ async function resetPassword(req, res) {
     user.password_hash = hash
     delete user.password_reset_token
     delete user.password_reset_expires
-    saveUsers(users)
+    await saveUsers(users)
 
     return res.json({ message: 'Password has been reset successfully' })
   } catch (err) {
@@ -362,7 +362,7 @@ async function verifyEmail(req, res) {
     const { token } = req.body
     if (!token) return res.status(400).json({ error: 'Verification token is required' })
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.email_verification_token === token)
     if (!user) {
       return res.status(400).json({ error: 'Invalid or expired verification token' })
@@ -375,7 +375,7 @@ async function verifyEmail(req, res) {
     user.is_verified = true
     delete user.email_verification_token
     delete user.email_verification_expires
-    saveUsers(users)
+    await saveUsers(users)
 
     return res.json({ message: 'Email verified successfully. You can now log in.' })
   } catch (err) {
@@ -393,7 +393,7 @@ async function changePassword(req, res) {
       return res.status(400).json({ error: 'Current and new passwords are required' })
     }
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.id === userId)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
@@ -410,7 +410,7 @@ async function changePassword(req, res) {
 
     const rounds = process.env.NODE_ENV === 'production' ? 8 : 10
     user.password_hash = await bcrypt.hash(newPassword, rounds)
-    saveUsers(users)
+    await saveUsers(users)
 
     return res.json({ message: 'Password changed successfully' })
   } catch (err) {
@@ -424,7 +424,7 @@ async function resendVerification(req, res) {
     const { email } = req.body
     if (!email) { return res.status(400).json({ error: 'Email is required' }) }
 
-    const users = getUsers()
+    const users = await getUsers()
     const user = users.find((u) => u.email === email)
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
@@ -439,7 +439,7 @@ async function resendVerification(req, res) {
 
     user.email_verification_token = token
     user.email_verification_expires = expires
-    saveUsers(users)
+    await saveUsers(users)
 
     try {
       await sendVerificationEmail(email, token, expires)

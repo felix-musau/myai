@@ -5,7 +5,7 @@ const { getConsultations } = require('../db')
 
 router.get('/history', authMiddleware, async (req, res) => {
   try {
-    const all = getConsultations()
+    const all = await getConsultations()
     const consultations = all
       .filter((c) => c.user_id === req.user.id)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -19,7 +19,7 @@ router.get('/history', authMiddleware, async (req, res) => {
 // Alias for /history to support frontend call to /consultations
 router.get('/consultations', authMiddleware, async (req, res) => {
   try {
-    const all = getConsultations()
+    const all = await getConsultations()
     const consultations = all
       .filter((c) => c.user_id === req.user.id)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -33,7 +33,7 @@ router.get('/consultations', authMiddleware, async (req, res) => {
 // Download consultation history as CSV
 router.get('/consultations/download/csv', authMiddleware, async (req, res) => {
   try {
-    const all = getConsultations()
+    const all = await getConsultations()
     const userConsultations = all
       .filter((c) => c.user_id === req.user.id)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -68,7 +68,7 @@ router.get('/consultations/download/csv', authMiddleware, async (req, res) => {
 // Download consultation history as JSON
 router.get('/consultations/download/json', authMiddleware, async (req, res) => {
   try {
-    const all = getConsultations()
+    const all = await getConsultations()
     const userConsultations = all
       .filter((c) => c.user_id === req.user.id)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))

@@ -6,7 +6,7 @@ const { getUsers, getConsultations, getDoctorRequests } = require('../db')
 // List all users (admin only)
 router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const users = getUsers().slice().sort((a, b) => (b.id || 0) - (a.id || 0))
+    const users = (await getUsers()).slice().sort((a, b) => (b.id || 0) - (a.id || 0))
     res.json({ users })
   } catch (err) {
     console.error('Admin users error:', err)
@@ -17,7 +17,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 // List all consultations (admin only)
 router.get('/admin/consultations', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const consultations = getConsultations().slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    const consultations = (await getConsultations()).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     res.json({ consultations })
   } catch (err) {
     console.error('Admin consultations error:', err)
@@ -28,7 +28,7 @@ router.get('/admin/consultations', authMiddleware, adminMiddleware, async (req, 
 // List doctor requests (admin only)
 router.get('/admin/doctor-requests', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const requests = getDoctorRequests().slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    const requests = (await getDoctorRequests()).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     res.json({ requests })
   } catch (err) {
     console.error('Admin doctor requests error:', err)
@@ -56,9 +56,9 @@ router.get('/admin/metrics', authMiddleware, adminMiddleware, async (req, res) =
         .sort((a, b) => a.day.localeCompare(b.day))
     }
 
-    const consultations = dailyCounts(getConsultations())
-    const doctorRequests = dailyCounts(getDoctorRequests())
-    const signups = dailyCounts(getUsers(), 'created_at')
+    const consultations = dailyCounts(await getConsultations())
+    const doctorRequests = dailyCounts(await getDoctorRequests())
+    const signups = dailyCounts(await getUsers(), 'created_at')
 
     res.json({
       consultations,

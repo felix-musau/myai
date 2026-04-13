@@ -196,7 +196,7 @@ router.post('/message', authMiddleware, async (req, res) => {
 
     // Save consultation to persistent storage
     try {
-      const consultations = getConsultations();
+      const consultations = await getConsultations();
       const id = getNextId(consultations);
       const consultation = {
         id,
@@ -207,7 +207,7 @@ router.post('/message', authMiddleware, async (req, res) => {
         created_at: new Date().toISOString()
       };
       consultations.unshift(consultation);
-      saveConsultations(consultations);
+      await saveConsultations(consultations);
       console.log('Consultation saved for user', req.user?.username);
     } catch (err) {
       console.error('Failed to save consultation:', err);
@@ -246,7 +246,20 @@ const bodyFacts = [
   "Your stomach gets a new lining every 3-4 days",
   "You lose about 4kg of skin cells each year",
   "Your brain is 73% water",
-  "Human DNA could stretch from Earth to the sun and back"
+  "Human DNA could stretch from Earth to the sun and back",
+  "Your blood travels about 12,000 miles per day",
+  "Your body has enough iron to make a small nail",
+  "Your small intestine is about 6 meters long",
+  "Your body has about 2-5 million sweat glands",
+  "Your eyes can distinguish about 10 million colors",
+  "Your tongue has about 10,000 taste buds",
+  "Your body produces about 1-1.5 liters of saliva daily",
+  "Your hair grows about 1.25 cm per month on average",
+  "Your kidneys filter about 50 gallons of blood daily",
+  "Your body has about 650 skeletal muscles",
+  "Your brain can generate about 20 watts of electrical power",
+  "Your bones are constantly being remodeled - you get a new skeleton every 10 years"
+  
 ];
 
 const proTips = [
@@ -259,7 +272,21 @@ const proTips = [
   "Keep a first aid kit at home with bandages, antiseptic, and pain relievers.",
   "Check your posture while sitting - keep your back straight and shoulders relaxed.",
   "Replace your toothbrush every 3 months or after illness to maintain oral hygiene.",
-  "Apply sunscreen with SPF 30+ daily to protect your skin from UV damage."
+  "Apply sunscreen with SPF 30+ daily to protect your skin from UV damage.",
+  "Eat a balanced diet with plenty of fruits and vegetables to support overall health.",
+  "Take a brisk walk for 30 minutes a day to boost cardiovascular health.",
+  "Use a humidifier in dry environments to prevent dry skin and respiratory issues.",
+  "Practice deep breathing exercises to reduce stress and improve lung function.",
+  "Elevate your legs for 15 minutes to reduce swelling after standing for long periods.",
+  "Use a cold compress on a fever to help bring it down.",
+  "Wear comfortable shoes that provide good support to prevent foot problems.",
+  "Limit screen time before bed to improve sleep quality.",
+  "Stay up to date with vaccinations to protect against preventable diseases.",
+  "Use a mouthguard when playing sports to protect your teeth.",
+  "Incorporate strength training exercises to maintain muscle mass and bone density."
+  
+  
+
 ];
 
 router.get('/fact', (req, res) => {
