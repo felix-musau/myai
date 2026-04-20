@@ -7,8 +7,9 @@ const usersPath = path.join(dbDir, 'users.json')
 const consultationsPath = path.join(dbDir, 'consultations.json')
 const doctorRequestsPath = path.join(dbDir, 'doctor_requests.json')
 
-const usePostgres = Boolean(process.env.DATABASE_URL)
-let pool = null
+const preferPostgres = process.env.PREFER_POSTGRES !== 'false';
+const usePostgres = Boolean(process.env.DATABASE_URL) && preferPostgres;
+let pool = null;
 
 function ensureDir() {
   if (!fs.existsSync(dbDir)) {
@@ -57,58 +58,84 @@ function normalizeDates(row, keys = []) {
 }
 
 async function initPostgres() {
-  if (!usePostgres) return
+  if (!usePostgres) {
+    console.log('ℹ️ Postgres disabled (no DATABASE_URL or PREFER_POSTGRES=false)')
+    return
+  }
 
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: Number(process.env.PG_MAX_CLIENTS || 10),
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000
-  })
+  const maxRetries = 3
+  let lastError = null
 
-  pool.on('error', (err) => {
-    console.error('Postgres pool error', err)
-  })
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+        max: Number(process.env.PG_MAX_CLIENTS || 10),
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000
+      })
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS users (
-    id integer PRIMARY KEY,
-    username text NOT NULL,
-    email text NOT NULL,
-    password_hash text NOT NULL,
-    is_verified boolean DEFAULT false,
-    email_verification_token text,
-    email_verification_expires timestamptz,
-    password_reset_token text,
-    password_reset_expires timestamptz,
-    is_admin boolean DEFAULT false,
-    created_at timestamptz DEFAULT now()
-  )`)
+      pool.on('error', (err) => {
+        console.error('Postgres pool error:', err)
+      })
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS consultations (
-    id integer PRIMARY KEY,
-    user_id integer,
-    username text,
-    message text,
-    reply text,
-    created_at timestamptz DEFAULT now()
-  )`)
+      // Test connection
+      await pool.query('SELECT 1')
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS doctor_requests (
-    id integer PRIMARY KEY,
-    user_id integer,
-    full_name text,
-    email text,
-    phone text,
-    symptoms text,
-    preferred_date text,
-    preferred_time text,
-    urgency text,
-    specialty text,
-    created_at timestamptz DEFAULT now()
-  )`)
+      // Create tables
+      await pool.query(`CREATE TABLE IF NOT EXISTS users (
+        id integer PRIMARY KEY,
+        username text NOT NULL,
+        email text NOT NULL,
+        password_hash text NOT NULL,
+        is_verified boolean DEFAULT false,
+        email_verification_token text,
+        email_verification_expires timestamptz,
+        password_reset_token text,
+        password_reset_expires timestamptz,
+        is_admin boolean DEFAULT false,
+        created_at timestamptz DEFAULT now()
+      )`)
 
-  console.log('✅ Postgres connected and tables ensured')
+      await pool.query(`CREATE TABLE IF NOT EXISTS consultations (
+        id integer PRIMARY KEY,
+        user_id integer,
+        username text,
+        message text,
+        reply text,
+        created_at timestamptz DEFAULT now()
+      )`)
+
+      await pool.query(`CREATE TABLE IF NOT EXISTS doctor_requests (
+        id integer PRIMARY KEY,
+        user_id integer,
+        full_name text,
+        email text,
+        phone text,
+        symptoms text,
+        preferred_date text,
+        preferred_time text,
+        urgency text,
+        specialty text,
+        created_at timestamptz DEFAULT now()
+      )`)
+
+      console.log('✅ Postgres connected and tables ensured')
+      break
+    } catch (err) {
+      lastError = err
+      console.warn(`Postgres init attempt ${attempt}/${maxRetries} failed:`, err.message)
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 5000 * attempt))
+      }
+    }
+  }
+
+  if (!pool) {
+    console.error('❌ Postgres init failed after retries:', lastError?.message)
+    pool = null
+  }
 }
 
 async function getUsers() {
@@ -121,8 +148,8 @@ async function getUsers() {
 
 async function saveUsers(users) {
   if (pool) {
-    const client = await pool.connect()
     try {
+      const client = await pool.connect()
       await client.query('BEGIN')
       await client.query('DELETE FROM users')
       for (const user of users) {
@@ -156,15 +183,16 @@ async function saveUsers(users) {
         )
       }
       await client.query('COMMIT')
-    } catch (err) {
-      await client.query('ROLLBACK')
-      throw err
-    } finally {
       client.release()
+      console.log(`✅ PG: Saved ${users.length} users`)
+      return
+    } catch (err) {
+      console.error('PG saveUsers failed, falling back to JSON:', err.message)
+      pool = null // Disable PG for this session
     }
-    return
   }
   writeJson(usersPath, { users })
+  console.log(`💾 JSON: Saved ${users.length} users`)
 }
 
 async function getConsultations() {
@@ -177,8 +205,8 @@ async function getConsultations() {
 
 async function saveConsultations(consultations) {
   if (pool) {
-    const client = await pool.connect()
     try {
+      const client = await pool.connect()
       await client.query('BEGIN')
       await client.query('DELETE FROM consultations')
       for (const consultation of consultations) {
@@ -202,15 +230,16 @@ async function saveConsultations(consultations) {
         )
       }
       await client.query('COMMIT')
-    } catch (err) {
-      await client.query('ROLLBACK')
-      throw err
-    } finally {
       client.release()
+      console.log(`✅ PG: Saved ${consultations.length} consultations`)
+      return
+    } catch (err) {
+      console.error('PG saveConsultations failed, falling back to JSON:', err.message)
+      pool = null
     }
-    return
   }
   writeJson(consultationsPath, { consultations })
+  console.log(`💾 JSON: Saved ${consultations.length} consultations`)
 }
 
 async function getDoctorRequests() {
@@ -223,8 +252,8 @@ async function getDoctorRequests() {
 
 async function saveDoctorRequests(requests) {
   if (pool) {
-    const client = await pool.connect()
     try {
+      const client = await pool.connect()
       await client.query('BEGIN')
       await client.query('DELETE FROM doctor_requests')
       for (const request of requests) {
@@ -258,21 +287,52 @@ async function saveDoctorRequests(requests) {
         )
       }
       await client.query('COMMIT')
-    } catch (err) {
-      await client.query('ROLLBACK')
-      throw err
-    } finally {
       client.release()
+      console.log(`✅ PG: Saved ${requests.length} doctor requests`)
+      return
+    } catch (err) {
+      console.error('PG saveDoctorRequests failed, falling back to JSON:', err.message)
+      pool = null
     }
-    return
   }
   writeJson(doctorRequestsPath, { requests })
+  console.log(`💾 JSON: Saved ${requests.length} doctor requests`)
 }
 
-initPostgres().catch((err) => {
-  console.error('Failed to initialize Postgres:', err)
-  pool = null
-})
+async function migrateJsonToPg() {
+  if (!pool) return console.log('ℹ️ No PG pool for migration')
+
+  try {
+    const jsonUsers = readJson(usersPath, { users: [] }).users || []
+    if (jsonUsers.length > 0) {
+      await saveUsers(jsonUsers)
+      console.log(`✅ Migrated ${jsonUsers.length} users from JSON to PG`)
+    }
+
+    const jsonConsults = readJson(consultationsPath, { consultations: [] }).consultations || []
+    if (jsonConsults.length > 0) {
+      await saveConsultations(jsonConsults)
+      console.log(`✅ Migrated ${jsonConsults.length} consultations from JSON to PG`)
+    }
+
+    const jsonRequests = readJson(doctorRequestsPath, { requests: [] }).requests || []
+    if (jsonRequests.length > 0) {
+      await saveDoctorRequests(jsonRequests)
+      console.log(`✅ Migrated ${jsonRequests.length} doctor requests from JSON to PG`)
+    }
+  } catch (err) {
+    console.error('Migration failed:', err.message)
+  }
+}
+
+initPostgres()
+  .then(() => {
+    if (pool) migrateJsonToPg()
+  })
+  .catch((err) => {
+    console.error('Failed to initialize Postgres:', err)
+    pool = null
+  })
 
 module.exports = {
   pool,

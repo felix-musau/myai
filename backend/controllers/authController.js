@@ -11,22 +11,25 @@ const {
 let tokenBlacklist = new Set()
 
 function getTransporter() {
-  // Try SendGrid first
+  // SendGrid (Render-friendly)
   if (process.env.SENDGRID_API_KEY) {
-    const sgMail = require('@sendgrid/mail')
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-    
-    return {
-      sendMail: async (options) => {
-        const msg = {
-          to: options.to,
-          from: process.env.SENDGRID_FROM_EMAIL || 'noreply@example.com',
-          subject: options.subject,
-          text: options.text,
-          html: options.html
+    try {
+      const sgMail = require('@sendgrid/mail')
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+      return {
+        sendMail: async (options) => {
+          const msg = {
+            to: options.to,
+            from: process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || 'noreply@myai.health',
+            subject: options.subject,
+            text: options.text,
+            html: options.html
+          }
+          await sgMail.send(msg)
         }
-        await sgMail.send(msg)
       }
+    } catch (err) {
+      console.error('SendGrid init error:', err.message)
     }
   }
   
@@ -71,12 +74,11 @@ async function sendVerificationEmail(email, token, expiresAt) {
       })
       console.log(`✅ Verification email sent to ${email}`)
     } catch (err) {
-      console.error(`⚠️ Failed to send verification email to ${email}:`, err.message)
-      // Log token for dev/fallback
-      console.log(`📨 [FALLBACK] Verification token for ${email}: ${token}, expires ${expiresAt}`)
+      console.error(`⚠️ Email send failed for ${email}:`, err.message)
+      console.log(`🔑 DEV FALLBACK - ${email} token: ${token} (expires ${expiresAt.toString().slice(0,19)} UTC)`)
     }
   } else {
-    console.log(`📨 [DEV] Email sending not configured. Verification token for ${email}: ${token}, expires ${expiresAt}`)
+    console.log(`🔑 DEV MODE - ${email} token: ${token} (expires ${expiresAt.toString().slice(0,19)} UTC)`)
   }
 }
 
