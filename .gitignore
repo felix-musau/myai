@@ -76,5 +76,21 @@ ENV/
 env.bak/
 venv.bak/
 
+# Debug and temp files
+debug_*.js
+verify-setup.js
+.replit
+
+# Datasets (unused ML data)
+*.csv
+
+# Images (duplicates)
+*.jpg
+*.png
+*.jpeg
+
+# Python/ML (unused)
+requirements.txt
+
 # Local
 .local/
